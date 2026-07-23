@@ -1,64 +1,81 @@
-const TRADES = ['Mécanique', 'Carrosserie', 'Pneumatique', 'Vitrage', 'Contrôle technique', 'Diagnostic', 'Climatisation', 'Échappement', 'Soudure', 'Détaillage', 'Boîte de vitesses', 'Dépannage'];
-const REGIONS = ['Bruxelles', 'Anvers', 'Liège', 'Gand', 'Charleroi', 'Namur', 'Bruges', 'Louvain', 'Mons', 'Hasselt', 'Tournai', 'Ostende'];
-const BRANDS = ['Audi', 'BMW', 'Mercedes', 'Peugeot', 'Renault', 'Volkswagen', 'Ford', 'Opel', 'Citroën', 'Toyota', 'Volvo', 'Skoda'];
+import { Link } from 'react-router-dom';
+
+const COLS = [
+  {
+    title: 'Explorer',
+    links: [
+      ['Garages Bruxelles', '/?location=Bruxelles'],
+      ['Garages Liège', '/?location=Liège'],
+      ['Garages Anvers', '/?location=Anvers'],
+      ['Tous les métiers', '/?service=Mécanique'],
+    ],
+  },
+  {
+    title: 'Confiance',
+    links: [
+      ['Méthodologie du score', '/about'],
+      ['Charte anti-fraude', '/legal/terms'],
+      ['Comment on gagne notre vie', '/about'],
+      ['Contact rédaction', '/about'],
+    ],
+  },
+  {
+    title: 'Pour les pros',
+    links: [
+      ['Revendiquer une fiche', '/pro/claim'],
+      ['Outils garagistes', '/pro'],
+      ['Tarifs', '/pricing'],
+    ],
+  },
+  {
+    title: 'Légal',
+    links: [
+      ['Mentions légales', '/legal/mentions'],
+      ['Confidentialité', '/legal/privacy'],
+      ['Cookies', '/legal/cookies'],
+      ['CGU', '/legal/terms'],
+    ],
+  },
+] as const;
 
 export default function SafemarqFooter() {
   return (
-    <footer id="about" className="bg-[#0F0F0F] text-[#CCCCCC]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-12 grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
-        <div className="col-span-2 md:col-span-1">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-md bg-[#0052CC] grid place-items-center text-white font-black text-sm">S</div>
-            <span className="font-extrabold text-white tracking-tight text-lg">SafeMarq</span>
+    <footer className="bg-navy-900 text-paper mt-0">
+      <div className="container-editorial pt-16 pb-10">
+        <div className="grid lg:grid-cols-[1.4fr_2fr] gap-12">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-md bg-amber grid place-items-center text-amber-d font-display text-lg" style={{ fontWeight: 600 }}>S</div>
+              <span className="font-display text-paper text-2xl" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>SafeMarq</span>
+            </div>
+            <p className="mt-5 text-slate2 max-w-sm leading-relaxed">
+              Comparateur indépendant de garages et carrossiers en Belgique. Nous ne vendons pas de réparations.
+              Nous vendons la vérité sur les prix.
+            </p>
+            <p className="mt-6 text-xs text-slate2/70">
+              Presse indépendante enregistrée en Belgique. Aucun garage ne finance nos évaluations.
+            </p>
           </div>
-          <p className="text-xs text-[#999] leading-relaxed">
-            Comparateur indépendant de garages et carrossiers en Belgique. Données publiques + avis Google API officielle.
-          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {COLS.map((c) => (
+              <div key={c.title}>
+                <p className="text-[11px] uppercase tracking-[0.14em] font-semibold text-amber">{c.title}</p>
+                <ul className="mt-4 space-y-2.5">
+                  {c.links.map(([l, to]) => (
+                    <li key={l}>
+                      <Link to={to} className="text-sm text-slate2 hover:text-paper transition-colors">
+                        {l}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
-
-        <div>
-          <p className="text-white font-semibold text-xs uppercase tracking-wider mb-3">Métiers</p>
-          <ul className="space-y-1.5 text-xs">
-            {TRADES.map(t => <li key={t}><a href="#" className="hover:text-white">{t}</a></li>)}
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-white font-semibold text-xs uppercase tracking-wider mb-3">Régions</p>
-          <ul className="space-y-1.5 text-xs">
-            {REGIONS.map(r => <li key={r}><a href="#" className="hover:text-white">{r}</a></li>)}
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-white font-semibold text-xs uppercase tracking-wider mb-3">Marques</p>
-          <ul className="space-y-1.5 text-xs">
-            {BRANDS.map(b => <li key={b}><a href="#" className="hover:text-white">{b}</a></li>)}
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-white font-semibold text-xs uppercase tracking-wider mb-3">À propos</p>
-          <ul className="space-y-1.5 text-xs">
-            <li><a href="#" className="hover:text-white">Notre méthode</a></li>
-            <li><a href="#" className="hover:text-white">Équipe</a></li>
-            <li><a href="#" className="hover:text-white">Presse</a></li>
-            <li><a href="#" className="hover:text-white">Contact</a></li>
-          </ul>
-          <p className="text-white font-semibold text-xs uppercase tracking-wider mt-5 mb-3">Légal</p>
-          <ul className="space-y-1.5 text-xs">
-            <li><a href="#" className="hover:text-white">CGU</a></li>
-            <li><a href="#" className="hover:text-white">Confidentialité (RGPD)</a></li>
-            <li><a href="#" className="hover:text-white">Cookies</a></li>
-            <li><a href="#" className="hover:text-white">Mentions légales</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="border-t border-[#222]">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-5 flex flex-wrap items-center gap-4 justify-between text-[11px] text-[#888]">
-          <span>© {new Date().getFullYear()} SafeMarq SRL · BCE 0789.123.456 · Bruxelles, Belgique 🇧🇪</span>
-          <span>Indépendant — non affilié aux constructeurs · Données publiques + avis Google API officielle</span>
+        <div className="mt-14 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-slate2">
+          <p>© {new Date().getFullYear()} SafeMarq · Bruxelles, Belgique</p>
+          <p>Fait à la main à Bruxelles · Données mises à jour chaque trimestre</p>
         </div>
       </div>
     </footer>

@@ -1,74 +1,77 @@
-import { Check } from 'lucide-react';
-
-const FEATURES = [
-  'Inscription gratuite à votre fiche établissement',
-  'Répondez aux avis Google et SafeMarq depuis un seul tableau de bord',
-  'Mettez à jour services, horaires, tarifs et certifications',
-  'Option premium : mise en avant locale (étiquetée « sponsorisé », transparence garantie)',
-  'Statistiques de consultation, demandes de devis et clics téléphone',
-];
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { ArrowRight, Check } from 'lucide-react';
+import { fadeUp, inViewProps, staggerParent } from './motion';
 
 export default function ProSection() {
-  return (
-    <section id="pro" className="bg-white border-b border-[#E5E5E5]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-16">
-        <div className="grid lg:grid-cols-5 gap-8 items-start">
-          <div className="lg:col-span-3">
-            <p className="text-xs uppercase tracking-wider text-[#00875A] font-semibold">Pour les professionnels</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-[#0F0F0F] mt-1" style={{ fontFamily: "'Source Serif Pro', Georgia, serif" }}>
-              Vous êtes garagiste ou carrossier ?
-            </h2>
-            <p className="text-sm text-[#555] mt-3 max-w-2xl leading-relaxed">
-              SafeMarq référence automatiquement les établissements à partir de données publiques.
-              Revendiquez votre fiche pour la maîtriser et bénéficier d’outils dédiés.
-            </p>
-            <ul className="mt-5 space-y-2.5">
-              {FEATURES.map(f => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-[#0F0F0F]">
-                  <Check className="w-4 h-4 text-[#00875A] mt-0.5 shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href="#"
-                className="inline-flex items-center px-5 py-2.5 bg-[#0052CC] text-white text-sm font-semibold rounded hover:bg-[#003D99]"
-              >
-                Revendiquer ma fiche
-              </a>
-              <a
-                href="#"
-                className="inline-flex items-center px-5 py-2.5 border border-[#0F0F0F] text-[#0F0F0F] text-sm font-semibold rounded hover:bg-[#0F0F0F] hover:text-white"
-              >
-                Voir les tarifs pro
-              </a>
-            </div>
-          </div>
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 50, y: 50 });
 
-          <aside className="lg:col-span-2 border border-[#E5E5E5] bg-[#FAFAFA] rounded-md p-5">
-            <p className="text-xs uppercase tracking-wider text-[#666] font-semibold">En chiffres</p>
-            <dl className="mt-3 space-y-3 text-sm">
-              <div className="flex justify-between border-b border-[#E5E5E5] pb-2">
-                <dt className="text-[#555]">Pros référencés</dt>
-                <dd className="font-semibold text-[#0F0F0F] tabular-nums">8 420</dd>
-              </div>
-              <div className="flex justify-between border-b border-[#E5E5E5] pb-2">
-                <dt className="text-[#555]">Fiches revendiquées</dt>
-                <dd className="font-semibold text-[#0F0F0F] tabular-nums">2 137</dd>
-              </div>
-              <div className="flex justify-between border-b border-[#E5E5E5] pb-2">
-                <dt className="text-[#555]">Demandes de devis / mois</dt>
-                <dd className="font-semibold text-[#0F0F0F] tabular-nums">14 200</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-[#555]">Visiteurs uniques / mois</dt>
-                <dd className="font-semibold text-[#0F0F0F] tabular-nums">186 000</dd>
-              </div>
-            </dl>
-          </aside>
+  return (
+    <section id="pro" className="bg-paper">
+      <motion.div variants={staggerParent} {...inViewProps} className="container-editorial py-16 md:py-24">
+        <div className="relative overflow-hidden rounded-2xl bg-ink text-paper p-8 md:p-14">
+          <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+          <div className="relative grid lg:grid-cols-[1.3fr_1fr] gap-10 items-center">
+            <div>
+              <motion.p variants={fadeUp} className="eyebrow">Pour les garagistes</motion.p>
+              <motion.h2
+                variants={fadeUp}
+                className="font-display mt-3 leading-[1.05]"
+                style={{ fontSize: 'clamp(1.9rem, 3.4vw, 2.8rem)', fontWeight: 500 }}
+              >
+                Vous êtes honnête. <em className="italic text-amber">Prouvez-le.</em>
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-slate2 mt-4 max-w-xl">
+                Revendiquez votre fiche gratuitement. Répondez aux avis, publiez vos tarifs, affichez votre
+                score SafeMarq sur votre vitrine.
+              </motion.p>
+              <motion.ul variants={fadeUp} className="mt-6 space-y-2 text-sm">
+                {['Fiche 100% gratuite', 'Certification écrite par nos enquêteurs', 'Badge à afficher en vitrine et sur Google'].map(x => (
+                  <li key={x} className="flex items-center gap-2 text-slate2">
+                    <Check className="w-4 h-4 text-amber" /> {x}
+                  </li>
+                ))}
+              </motion.ul>
+              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/pro/claim"
+                  ref={ref as never}
+                  onMouseMove={(e) => {
+                    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setPos({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+                  }}
+                  className="btn-amber relative overflow-hidden"
+                  style={{
+                    backgroundImage: `radial-gradient(circle at ${pos.x}% ${pos.y}%, hsl(var(--amber)/0.9), hsl(var(--amber)))`,
+                  }}
+                >
+                  Revendiquer mon garage <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link to="/pro" className="btn-ghost-navy border-white/20 text-paper hover:bg-white/5">
+                  Découvrir les outils pros
+                </Link>
+              </motion.div>
+            </div>
+
+            <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+              {[
+                ['+38%', 'de demandes de devis en 90 j'],
+                ['4,7 ★', 'note moyenne après réponse aux avis'],
+                ['12 min', 'temps moyen de revendication'],
+                ['0 €', 'inscription et badge de base'],
+              ].map(([n, l]) => (
+                <div key={n as string} className="border border-white/10 rounded-xl p-5 bg-white/[0.02]">
+                  <p className="font-display text-amber text-3xl num" style={{ fontWeight: 600 }}>{n}</p>
+                  <p className="text-xs text-slate2 mt-1">{l}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
