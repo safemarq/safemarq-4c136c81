@@ -1,52 +1,74 @@
-import { Star, BarChart3, MessageSquare, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fadeUp, inViewProps, staggerParent } from './motion';
+import ScoreSeal from './ScoreSeal';
 
-const PILLARS = [
-  { icon: Star, weight: '40%', title: 'Avis Google agrégés', text: 'Récupérés via l’API officielle, recalculés chaque semaine.' },
-  { icon: BarChart3, weight: '20%', title: 'Volume et récurrence', text: 'Un garage avec 200 avis réguliers compte plus que 10 avis isolés.' },
-  { icon: MessageSquare, weight: '15%', title: 'Réponses aux clients', text: 'Un garage qui répond — même aux critiques — gagne en transparence.' },
-  { icon: ClipboardCheck, weight: '25%', title: 'Critères SafeMarq', text: 'Devis écrit, garantie affichée, transparence des prix de pièces.' },
+const STEPS = [
+  {
+    n: '01', title: 'Collecte des données publiques',
+    body: "Nous agrégeons les avis Google Business, les registres BCE, les données Car-Pass et les rapports de contrôle technique GOCA.",
+  },
+  {
+    n: '02', title: 'Enquête prix indépendante',
+    body: "Chaque trimestre, nos enquêteurs demandent des devis anonymes sur 12 opérations standard, dans les trois régions.",
+  },
+  {
+    n: '03', title: 'Score pondéré et transparent',
+    body: "Note Google (40%), volume d'avis vérifiés (20%), écart de prix vs médiane (25%), délai de RDV (15%). Formule publiée.",
+  },
 ];
 
 export default function Methodology() {
   return (
-    <section className="bg-white border-b border-[#E5E5E5]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-16">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-xs uppercase tracking-wider text-[#0052CC] font-semibold">Transparence</p>
-          <h2 className="text-2xl md:text-3xl font-bold text-[#0F0F0F] mt-1" style={{ fontFamily: "'Source Serif Pro', Georgia, serif" }}>
-            Comment SafeMarq note les garages
-          </h2>
-          <p className="text-sm text-[#555] mt-2">
-            Aucun garage ne peut acheter sa note. Voici précisément comment notre score sur 100 est calculé.
-          </p>
-        </div>
+    <section id="method" className="bg-navy-900 text-paper">
+      <motion.div variants={staggerParent} {...inViewProps} className="container-editorial py-16 md:py-24">
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-14 items-start">
+          <div>
+            <motion.p variants={fadeUp} className="eyebrow" style={{ color: 'hsl(var(--amber))' }}>Méthodologie</motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="font-display mt-3 leading-[1.05]"
+              style={{ fontSize: 'clamp(1.9rem, 3.6vw, 3rem)', fontWeight: 500 }}
+            >
+              Notre score, <em className="italic text-amber">on l'explique.</em>
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-slate2 mt-4 max-w-xl">
+              Aucun garage ne peut acheter un meilleur score. Aucun logo sponsorisé. Nous publions la formule
+              et le code de calcul.
+            </motion.p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PILLARS.map(p => {
-            const Icon = p.icon;
-            return (
-              <div key={p.title} className="border border-[#E5E5E5] rounded-md p-5 bg-[#FAFAFA]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded bg-white border border-[#E5E5E5] grid place-items-center">
-                    <Icon className="w-5 h-5 text-[#0052CC]" />
+            <div className="mt-10 space-y-6">
+              {STEPS.map((s) => (
+                <motion.div key={s.n} variants={fadeUp} className="flex gap-5 border-t border-white/10 pt-6">
+                  <span className="font-display text-amber text-3xl num" style={{ fontWeight: 600 }}>{s.n}</span>
+                  <div>
+                    <h3 className="font-display text-paper text-xl" style={{ fontWeight: 600 }}>{s.title}</h3>
+                    <p className="text-slate2 text-sm mt-2 max-w-lg leading-relaxed">{s.body}</p>
                   </div>
-                  <span className="text-xs font-bold text-[#00875A] bg-[#E6F4EC] px-2 py-1 rounded">
-                    {p.weight}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-[#0F0F0F]">{p.title}</p>
-                <p className="text-xs text-[#555] mt-1.5 leading-relaxed">{p.text}</p>
-              </div>
-            );
-          })}
-        </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
 
-        <div className="mt-6">
-          <a href="#" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0052CC] hover:underline">
-            Voir notre méthodologie complète <ArrowRight className="w-4 h-4" />
-          </a>
+          <motion.div variants={fadeUp} className="flex justify-center">
+            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur">
+              <ScoreSeal score={72} grade="Bien · B+" size={220} label="Exemple pondéré" />
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-2 text-xs text-slate2">
+                {[
+                  ['Note Google', '4,2 / 5', '40%'],
+                  ['Avis vérifiés', '186', '20%'],
+                  ['Écart prix', '−12%', '25%'],
+                  ['Délai RDV', '2 j', '15%'],
+                ].map(([k, v, w]) => (
+                  <div key={k} className="flex justify-between">
+                    <span>{k}</span>
+                    <span className="text-paper num">{v} <span className="text-slate2">· {w}</span></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

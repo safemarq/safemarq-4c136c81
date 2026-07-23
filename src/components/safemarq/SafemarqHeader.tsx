@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { Search, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ChevronDown, Menu, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const TRADES = [
   'Mécanique générale', 'Carrosserie & peinture', 'Pneumatique', 'Vitrage auto',
@@ -10,80 +10,119 @@ const TRADES = [
 
 export default function SafemarqHeader() {
   const [tradesOpen, setTradesOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState<'FR' | 'NL' | 'EN'>('FR');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 8);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FAFAFA]/95 backdrop-blur border-b border-[#E5E5E5]">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 h-16 flex items-center gap-4">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-md bg-[#0052CC] grid place-items-center text-white font-black text-sm">S</div>
-          <span className="font-extrabold text-[#0F0F0F] tracking-tight text-lg">SafeMarq</span>
+    <header
+      className={`sticky top-0 z-40 transition-all duration-300 ${
+        scrolled ? 'bg-paper/85 backdrop-blur-xl border-b hairline' : 'bg-paper/60 backdrop-blur-md border-b border-transparent'
+      }`}
+    >
+      <div className="container-editorial h-16 flex items-center gap-6">
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+          <div className="relative w-9 h-9 rounded-md bg-navy-900 grid place-items-center overflow-hidden">
+            <span className="font-display text-paper text-lg leading-none" style={{ fontWeight: 600 }}>S</span>
+            <span className="absolute bottom-0 right-0 w-2 h-2 bg-amber" />
+          </div>
+          <span className="font-display text-ink text-xl leading-none" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>
+            SafeMarq
+          </span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-5 text-sm text-[#0F0F0F]">
-          <a href="#trades" className="hover:text-[#0052CC]">Garages</a>
-          <a href="#trades" className="hover:text-[#0052CC]">Carrosseries</a>
-          <a href="#trades" className="hover:text-[#0052CC]">Pneus</a>
-          <a href="#trades" className="hover:text-[#0052CC]">Vitrage</a>
+        <nav className="hidden lg:flex items-center gap-6 text-sm text-ink">
+          <button onClick={() => navigate('/?service=Mécanique')} className="hover:text-navy-900 transition-colors">Garages</button>
+          <button onClick={() => navigate('/?service=Carrosserie')} className="hover:text-navy-900 transition-colors">Carrosseries</button>
           <div className="relative">
-            <button onClick={() => setTradesOpen(v => !v)} className="flex items-center gap-1 hover:text-[#0052CC]">
-              Tous les métiers <ChevronDown className="w-3.5 h-3.5" />
+            <button
+              onClick={() => setTradesOpen(v => !v)}
+              onBlur={() => setTimeout(() => setTradesOpen(false), 150)}
+              className="flex items-center gap-1 hover:text-navy-900 transition-colors"
+              aria-expanded={tradesOpen}
+            >
+              Tous les métiers <ChevronDown className={`w-3.5 h-3.5 transition-transform ${tradesOpen ? 'rotate-180' : ''}`} />
             </button>
             {tradesOpen && (
-              <div className="absolute top-full mt-2 left-0 w-72 bg-white border border-[#E5E5E5] shadow-lg rounded-md p-2 grid grid-cols-2 gap-0.5">
+              <div className="absolute top-full mt-3 left-0 w-80 bg-white border hairline rounded-xl shadow-lg p-2 grid grid-cols-2 gap-0.5 animate-fade-in">
                 {TRADES.map(t => (
-                  <a key={t} href="#trades" className="px-3 py-2 text-xs hover:bg-[#F5F5F5] rounded text-[#0F0F0F]">
+                  <button
+                    key={t}
+                    onMouseDown={(e) => { e.preventDefault(); navigate(`/?service=${encodeURIComponent(t)}`); setTradesOpen(false); }}
+                    className="text-left px-3 py-2 text-xs hover:bg-paper rounded-md text-ink"
+                  >
                     {t}
-                  </a>
+                  </button>
                 ))}
               </div>
             )}
           </div>
-          <a href="#blog" className="hover:text-[#0052CC]">Blog</a>
-          <a href="#about" className="hover:text-[#0052CC]">À propos</a>
+          <Link to="/about" className="hover:text-navy-900 transition-colors">Méthode</Link>
+          <Link to="/pro" className="hover:text-navy-900 transition-colors">Pour les pros</Link>
         </nav>
 
-        <div className="flex-1 max-w-md hidden md:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666]" />
-            <input
-              type="text"
-              placeholder="Garage, marque ou ville en Belgique..."
-              className="w-full pl-9 pr-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm text-[#0F0F0F] placeholder:text-[#999] focus:outline-none focus:border-[#0052CC]"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 ml-auto md:ml-0">
-          <a
-            href="#pro"
-            className="hidden sm:inline-flex items-center px-3 py-1.5 text-xs font-semibold text-[#0052CC] border border-[#0052CC] rounded hover:bg-[#0052CC] hover:text-white transition-colors"
-          >
-            Inscrire mon garage
-          </a>
+        <div className="flex items-center gap-3 ml-auto">
           <select
             value={lang}
             onChange={(e) => setLang(e.target.value as 'FR' | 'NL' | 'EN')}
-            className="text-xs bg-transparent border border-[#E5E5E5] rounded px-2 py-1 text-[#0F0F0F]"
+            aria-label="Langue"
+            className="hidden sm:block text-xs bg-transparent border hairline rounded-md px-2 py-1.5 text-ink focus:outline-none focus:ring-2 focus:ring-amber/40"
           >
-            <option value="FR">🇫🇷 FR</option>
-            <option value="NL">🇳🇱 NL</option>
-            <option value="EN">🇬🇧 EN</option>
+            <option value="FR">FR</option>
+            <option value="NL">NL</option>
+            <option value="EN">EN</option>
           </select>
+          <Link
+            to="/pro/claim"
+            className="hidden md:inline-flex items-center px-3.5 py-2 text-xs font-semibold text-ink border border-ink/20 rounded-lg hover:bg-ink hover:text-paper transition-colors"
+          >
+            Revendiquer mon garage
+          </Link>
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden p-2 -mr-2 text-ink"
+            aria-label="Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* mobile search */}
-      <div className="md:hidden px-4 pb-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666]" />
-          <input
-            type="text"
-            placeholder="Garage, marque ou ville..."
-            className="w-full pl-9 pr-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm"
-          />
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-paper animate-fade-in">
+          <div className="container-editorial h-16 flex items-center justify-between">
+            <span className="font-display text-ink text-xl" style={{ fontWeight: 600 }}>SafeMarq</span>
+            <button onClick={() => setMobileOpen(false)} aria-label="Fermer"><X className="w-6 h-6 text-ink" /></button>
+          </div>
+          <nav className="container-editorial mt-8 flex flex-col gap-1">
+            {[
+              { l: 'Garages', to: '/?service=Mécanique' },
+              { l: 'Carrosseries', to: '/?service=Carrosserie' },
+              { l: 'Tous les métiers', to: '/' },
+              { l: 'Méthode', to: '/about' },
+              { l: 'Pour les pros', to: '/pro' },
+              { l: 'Revendiquer mon garage', to: '/pro/claim' },
+            ].map((x) => (
+              <button
+                key={x.l}
+                onClick={() => { navigate(x.to); setMobileOpen(false); }}
+                className="text-left font-display text-3xl text-ink py-3 border-b hairline"
+                style={{ fontWeight: 500 }}
+              >
+                {x.l}
+              </button>
+            ))}
+          </nav>
         </div>
-      </div>
+      )}
     </header>
   );
 }
