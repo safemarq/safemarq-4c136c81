@@ -27,6 +27,7 @@ import CookiesPage from "./pages/legal/Cookies.tsx";
 import Mentions from "./pages/legal/Mentions.tsx";
 import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import TradeCity from "./pages/TradeCity.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,8 @@ const App = () => (
                   <Route path="/legal/cookies" element={<CookiesPage />} />
                   <Route path="/legal/mentions" element={<Mentions />} />
                   <Route path="/admin" element={<Admin />} />
+                  {/* Ranking page: /:trade/:city — validated inside the component */}
+                  <Route path="/:trade/:city" element={<TradeCity />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

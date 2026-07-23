@@ -1,98 +1,55 @@
+## Objectif
 
-# Landing page premium SAFEMARQ — "Sérieux, on lance"
+Recentrer SafeMarq sur la question « Meilleurs [métier] à [ville] ». On livre en 3 étapes comme demandé : (1) `ScoreSeal` — déjà en place, on l'exploite tel quel ; (2) page de classement `/[metier]/[ville]` ; (3) refonte du Hero d'accueil métier + ville. Les grilles ville/métier et pages villes/métiers viennent ensuite.
 
-Objectif : transformer la home actuelle (qui est un outil de recherche) en **landing de lancement** capable de convertir 3 audiences à la fois (automobilistes, garagistes, presse/curieux), tout en gardant l'outil de recherche accessible immédiatement.
+## État des données (important)
 
-## Principe directeur
+La base actuelle **n'a pas** de table `trades`, ni de colonne `city`, ni de vue `garage_trade_ratings`. La table `garages` a `address`, `specialty`, `type`, `rating`, `reviews_count`. On ne crée **pas** de nouvelles tables dans cette itération : on définit les 13 métiers en TypeScript statique et on dérive la ville depuis `address` (regex + normalisation). Le mapping métier ⇄ garage se fait via `specialty` / `description` (heuristique par mots-clés). Dès que la table `garages` sera peuplée, les pages afficheront le classement ; en attendant, un état vide propre est affiché.
 
-On garde la barre de recherche en haut (c'est le cœur produit), mais on **enrobe** la page d'une vraie narration de marque : hero éditorial, preuve sociale, méthode, sections audience, CTA finaux. Aujourd'hui la home jette l'utilisateur direct dans la grille — ça marche pour un user qui sait, pas pour un visiteur qui découvre.
+## Étape 1 — Fondations
 
-## Structure de la nouvelle home
+- `src/lib/trades.ts` : constantes des 13 métiers `{ slug, label, labelPlural, keywords[] }` (entretien, mecanique, carrosserie, pneus, depannage, detailing, preparation-perf, pare-brise, electricite, climatisation, diagnostic, controle-technique, pieces).
+- `src/lib/cities.ts` : liste de villes belges principales + `slugifyCity()`, `cityFromAddress()`.
+- `src/lib/ranking.ts` : `matchTrade(garage, tradeSlug)` (recherche mots-clés dans specialty/description/badges) et `rankGarages(list)` par score SafeMarq desc.
 
-```text
-┌─────────────────────────────────────────┐
-│ 1. HERO éditorial + recherche live      │  ← refonte SearchHero
-│ 2. Bandeau "trust strip" (chiffres)     │  ← nouveau
-│ 3. Section "Comment ça marche" (3 étapes)│ ← nouveau
-│ 4. Carte + résultats (l'outil actuel)   │  ← conservé, retitré
-│ 5. "Le score SAFEMARQ" (méthode)        │  ← nouveau, lien /about
-│ 6. Témoignages / avis vedettes          │  ← nouveau
-│ 7. Split CTA : Automobilistes | Pros    │  ← nouveau
-│ 8. FAQ courte (4-5 questions)           │  ← nouveau
-│ 9. Footer (existant)                    │
-└─────────────────────────────────────────┘
-```
+## Étape 2 — Page classement `/:trade/:city`
 
-## Détail des nouvelles sections
+- Route ajoutée dans `src/App.tsx` **au-dessus** de la catch-all : `/:trade/:city` → `TradeCity`.
+- `src/pages/TradeCity.tsx` :
+  - Valide `trade` (∈ 13 slugs) et `city` (slug connu). Sinon → `NotFound`.
+  - Fil d'ariane · titre éditorial · sous-titre avec compteur.
+  - Barre de re-filtrage compacte (2 selects métier/ville, submit → navigate).
+  - Liste classée : `RankedGarageRow` avec rang #1..N ; le #1 a bordure amber + badge « Meilleur choix à {ville} ».
+  - Chaque ligne : rang, `ScoreSeal` compact, nom, note + `reviews_count`, ville, extrait `quote`, CTA « Demander un devis » (lien fiche).
+  - État vide dédié si aucun match.
+  - Bloc SEO bas de page : intro éditoriale + FAQ (3 questions génériques paramétrées).
+  - `<Seo>` titre/description dynamiques + JSON-LD `ItemList`.
 
-### 1. Hero refondu (`HeroLaunch.tsx`)
-- Headline plus fort, en français, pleine largeur : « Le garage de confiance, **vérifié par les vrais conducteurs.** »
-- Sous-titre court qui positionne : comparateur indépendant Belgique.
-- Barre de recherche XL centrée (réutilise la logique de `SearchHero` actuelle, suggestions incluses).
-- Bouton secondaire « Me géolocaliser » à côté.
-- Fond : dégradé subtil bleu nuit + halo `trust-glow` derrière le logo, particules statiques douces (pas d'animation lourde).
-- Mention micro sous la barre : « Gratuit • Sans inscription • 🇧🇪 ».
+- `src/components/safemarq/RankedGarageRow.tsx` : composant réutilisable, animation `whileInView` + hover spring.
+- `src/components/safemarq/TradeCityFilterBar.tsx` : re-filtrage inline.
 
-### 2. Trust strip (`TrustStrip.tsx`)
-Bande horizontale entre hero et carte, 4 chiffres animés (count-up via framer-motion) :
-- Nombre de garages référencés (depuis `useGarages`)
-- Nombre d'avis vérifiés (agrégé via Supabase count)
-- Note moyenne plateforme
-- « 100% indépendant »
+## Étape 3 — Hero métier + ville
 
-### 3. Comment ça marche (`HowItWorks.tsx`)
-3 cartes alignées, icônes Lucide cohérentes :
-1. **Cherchez** — ville ou marque
-2. **Comparez** — score SAFEMARQ, avis, devis
-3. **Choisissez** — réservez ou demandez un devis
+- Refonte `src/components/safemarq/SafemarqHero.tsx` :
+  - 2 champs côte à côte : select métier (13 options) + input ville avec `<datalist>` (villes belges connues).
+  - Titre éditorial fort : « Les meilleurs garages de Belgique, notés par ceux qui y sont allés. »
+  - Compteur animé (déjà `AnimatedNumber`).
+  - Bouton « Voir le classement » → `navigate(/{tradeSlug}/{citySlug})`.
+  - Chips de recherches populaires réelles → mêmes routes.
+  - Trust signals conservés. Score Seal du côté droit conservé.
 
-### 4. Outil de recherche existant
-On conserve `HomeMap` + `ComparisonEngine` + `ReviewCards` + `QuoteComparator`, mais on ajoute un **titre de section** (« Explorez les garages près de chez vous ») et on ajuste les espacements.
+## Hors périmètre pour cette itération
 
-### 5. Section méthode (`MethodSection.tsx`)
-- Visuel à gauche (formule du score SAFEMARQ illustrée : 60% note + 40% volume).
-- Texte à droite : pourquoi c'est plus juste qu'une simple moyenne Google.
-- CTA : « Lire notre méthode complète » → `/about`.
-
-### 6. Témoignages (`Testimonials.tsx`)
-- 3 cartes de témoignages (placeholders crédibles au lancement, à remplacer par de vrais avis).
-- Format : photo/initiales, citation, nom + ville + véhicule.
-- Slide horizontal sur mobile.
-
-### 7. Split CTA (`SplitCTA.tsx`)
-Deux gros blocs côte à côte (mobile : empilés) :
-- **Gauche — Automobilistes** : « Trouvez votre garage » → scroll vers la carte.
-- **Droite — Garagistes** : « Revendiquez votre fiche » → `/pro`.
-Chacun avec un visuel/icon distinct et un bénéfice court.
-
-### 8. FAQ (`FaqSection.tsx`)
-Accordion shadcn, 5 questions :
-- Comment SAFEMARQ choisit-il les garages ?
-- Comment vérifiez-vous les avis ?
-- Est-ce gratuit ?
-- Comment fonctionne le score SAFEMARQ ?
-- Je suis garagiste, comment apparaître ?
+Pages `/ville/:city` et `/metier/:trade`, grilles CityGrid/TradeGrid, migration SQL (`trades`, `garage_trades`, colonne `city`), refonte des sections `PriceTruth`/`RegionsBlock`. À traiter dans la prochaine étape une fois les 3 briques validées.
 
 ## Détails techniques
 
-- **Nouveaux fichiers** dans `src/components/landing/` :
-  `HeroLaunch.tsx`, `TrustStrip.tsx`, `HowItWorks.tsx`, `MethodSection.tsx`, `Testimonials.tsx`, `SplitCTA.tsx`, `FaqSection.tsx`.
-- **`src/pages/Index.tsx`** réorganisé pour orchestrer ces sections dans l'ordre ci-dessus. La logique de filtres/recherche reste, juste déplacée sous le hero.
-- **`SearchHero.tsx`** est remplacé par `HeroLaunch.tsx` (on garde la logique suggestions, on jette les "trust indicators" dupliqués).
-- **Animations** : `framer-motion` (déjà utilisé) — fade-up à l'apparition (`whileInView`), count-up custom pour les stats. Aucune nouvelle dépendance.
-- **Stats dynamiques** : nouveau hook `useLandingStats()` qui fait `count` sur `garages` et `reviews` via Supabase (`select('*', { count: 'exact', head: true })`). React Query, cache 5 min.
-- **Composant FAQ** : utilise `@/components/ui/accordion` déjà présent.
-- **Responsive** : mobile-first, 1 colonne sous `md`, 2-3 colonnes au-dessus. Hero passe de 60vh (mobile) à 80vh (desktop).
-- **SEO** : enrichir le `jsonLd` dans `Index.tsx` avec un objet `Organization` (nom, logo, sameAs vides pour l'instant) en plus du `WebSite` existant.
-- **Pas de changement backend** : aucune migration, aucun edge function.
+- Score SafeMarq déjà exposé par `calculateSAFEMARQScore(rating, reviews_count)` dans `useGarages.ts`. On l'utilise pour trier.
+- Aucune modification DB, aucune régression sur les routes existantes (la nouvelle route `/:trade/:city` est très spécifique, mais elle risque de capturer d'anciennes URLs à 2 segments — on liste explicitement les slugs valides dans le composant et on retombe sur `NotFound` sinon, avant même le rendu, pour éviter toute collision).
+- Animations : `EASE`, `fadeUp`, `staggerParent` déjà dans `src/components/safemarq/motion.ts`. `prefers-reduced-motion` respecté via `useReducedMotion` (déjà utilisé).
+- Accessibilité : `aria-label` sur rang, focus rings shadcn conservés, `sr-only` sur labels des selects.
 
-## Hors scope (pour plus tard)
+## Validation
 
-- Vraies vidéos/photos hero (placeholders propres pour l'instant).
-- Logos presse / "ils parlent de nous".
-- A/B testing.
-- Animations Lottie.
-
-## Livrable
-
-Une seule itération qui livre les 7 nouveaux composants + l'`Index.tsx` réorganisé. Build vérifié, responsive testé mentalement aux breakpoints mobile/tablet/desktop.
+- `tsgo` doit passer.
+- Navigation manuelle : `/carrosserie/namur` charge, montre l'état vide propre ; le hero soumet vers la bonne URL ; les chips naviguent.
