@@ -34,12 +34,8 @@ export default function PriceTruth() {
               <span className="text-xs text-slate1">Prix moyen constaté</span>
             </div>
             <div className="mt-6 flex items-baseline gap-2">
-              <AnimatedNumber
-                value={340}
-                className="font-display text-ink"
-              />
               <span className="font-display text-ink text-6xl md:text-7xl" style={{ fontWeight: 600 }}>
-                {/* placeholder to preserve baseline; number rendered above via span */}
+                <AnimatedNumber value={340} /> €
               </span>
             </div>
             <p className="font-display text-slate1 text-sm mt-2">
