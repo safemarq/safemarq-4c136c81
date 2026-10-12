@@ -24,7 +24,7 @@ export default function ChainsVsIndependents() {
           </p>
         </div>
 
-        <div className="overflow-x-auto bg-white border border-[#E5E5E5] rounded-md">
+        <div className="overflow-x-auto bg-card border border-[#E5E5E5] rounded-md">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E5E5] bg-[#F5F5F5]">
@@ -35,7 +35,7 @@ export default function ChainsVsIndependents() {
             </thead>
             <tbody>
               {ROWS.map((r, i) => (
-                <tr key={r.criterion} className={i % 2 ? 'bg-[#FAFAFA]' : 'bg-white'}>
+                <tr key={r.criterion} className={i % 2 ? 'bg-[#FAFAFA]' : 'bg-card'}>
                   <td className="px-4 py-3 text-[#0F0F0F] font-medium">{r.criterion}</td>
                   <td className="px-4 py-3 text-[#444]">
                     <span className="inline-flex items-center gap-2">

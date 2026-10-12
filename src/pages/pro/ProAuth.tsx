@@ -1,0 +1,307 @@
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Eye, EyeOff, MailCheck } from 'lucide-react';
+import { toast } from 'sonner';
+import Seo from '@/components/Seo';
+import { ProShell } from '@/components/pro/ProShell';
+import { Field } from '@/components/pro/Field';
+import { GoogleIcon } from '@/components/pro/GoogleIcon';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProAccount } from '@/hooks/useProAccount';
+import { useI18n } from '@/i18n/I18nProvider';
+import type { MessageKey } from '@/i18n/types';
+import { emailSchema, passwordSchema } from '@/lib/pro/validation';
+import { cn } from '@/lib/utils';
+
+type Mode = 'signin' | 'signup';
+
+const signInSchema = z.object({ email: emailSchema, password: z.string().min(1, { message: 'validation.required' }) });
+const signUpSchema = z.object({ email: emailSchema, password: passwordSchema });
+type Values = z.infer<typeof signUpSchema>;
+
+const AFTER_AUTH = '/pro/connexion';
+
+function authErrorKey(code: string | undefined, message: string): MessageKey {
+  if (code === 'invalid_credentials' || /invalid login/i.test(message)) return 'pro.auth.errorInvalid';
+  if (code === 'email_not_confirmed' || /not confirmed/i.test(message)) return 'pro.auth.errorNotConfirmed';
+  if (code === 'user_already_exists' || /already registered/i.test(message)) return 'pro.auth.errorExists';
+  if (/fetch/i.test(message)) return 'common.errorNetwork';
+  return 'common.errorGeneric';
+}
+
+export default function ProAuth() {
+  const { t } = useI18n();
+  const navigate = useNavigate();
+  const { user, loading, recovering, signIn, signUp, signInWithGoogle, requestPasswordReset, resendConfirmation } = useAuth();
+  const { data: pro, isLoading: proLoading, isFetched: proFetched } = useProAccount();
+
+  const [mode, setMode] = useState<Mode>('signin');
+  const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState<MessageKey | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  // The resolver reads the current tab at validation time (useForm keeps its first options).
+  const modeRef = useRef<Mode>(mode);
+  modeRef.current = mode;
+  const form = useForm<Values>({
+    resolver: (values, ctx, options) =>
+      zodResolver(modeRef.current === 'signin' ? signInSchema : signUpSchema)(values, ctx, options),
+    defaultValues: { email: '', password: '' },
+    mode: 'onTouched',
+  });
+
+  // Signed in (password, Google return, or confirmation link): send the pro where they belong.
+  useEffect(() => {
+    if (loading || !user || recovering || proLoading || !proFetched) return;
+    navigate(pro ? '/pro/dashboard' : '/pro/inscription', { replace: true });
+  }, [loading, user, recovering, pro, proLoading, proFetched, navigate]);
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setFormError(null);
+    form.clearErrors();
+  };
+
+  const onSubmit = form.handleSubmit(async ({ email, password }) => {
+    setFormError(null);
+    if (mode === 'signin') {
+      const { error } = await signIn(email, password);
+      if (error) setFormError(authErrorKey(error.code, error.message));
+      return;
+    }
+    const res = await signUp(email, password, undefined, AFTER_AUTH);
+    if (res.error) return setFormError(authErrorKey(res.error.code, res.error.message));
+    if (res.alreadyExists) {
+      switchMode('signin');
+      return setFormError('pro.auth.errorExists');
+    }
+    if (res.needsConfirmation) setSentTo(email);
+  });
+
+  const onGoogle = async () => {
+    setGoogleBusy(true);
+    const { error } = await signInWithGoogle(AFTER_AUTH);
+    // On success the browser leaves for Google; we only get here on failure.
+    if (error) {
+      setGoogleBusy(false);
+      setFormError('pro.auth.errorGoogle');
+    }
+  };
+
+  const onForgot = async () => {
+    const email = form.getValues('email');
+    const parsed = emailSchema.safeParse(email);
+    if (!parsed.success) {
+      form.setFocus('email');
+      return setFormError('pro.auth.resetPrompt');
+    }
+    await requestPasswordReset(parsed.data, '/pro/nouveau-mot-de-passe');
+    // Same message whether or not the account exists (no account enumeration).
+    toast.success(t('pro.auth.resetSent', { email: parsed.data }));
+  };
+
+  const submitting = form.formState.isSubmitting;
+  const { errors } = form.formState;
+
+  return (
+    <ProShell>
+      <Seo title={t('pro.auth.metaTitle')} description={t('pro.auth.metaDescription')} />
+      <div className="grid gap-10 py-8 md:py-14 lg:grid-cols-[minmax(0,440px)_1fr] lg:gap-16">
+        <section aria-labelledby="pro-auth-title" className="min-w-0">
+          {sentTo ? (
+            <div className="card-warm p-6 md:p-8">
+              <MailCheck className="h-8 w-8 text-teal" aria-hidden />
+              <h1 id="pro-auth-title" className="mt-4 text-[28px] leading-tight text-strong">
+                {t('pro.auth.checkInboxTitle')}
+              </h1>
+              <p className="mt-3 text-[15px] leading-relaxed text-slate1">{t('pro.auth.checkInboxBody', { email: sentTo })}</p>
+              <button
+                type="button"
+                className="mt-6 text-[15px] font-semibold text-strong underline underline-offset-4"
+                onClick={async () => {
+                  await resendConfirmation(sentTo, AFTER_AUTH);
+                  toast.success(t('pro.auth.checkInboxResent'));
+                }}
+              >
+                {t('pro.auth.checkInboxResend')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <h1 id="pro-auth-title" className="text-[34px] leading-[1.05] text-strong md:text-[44px]">
+                {t('pro.auth.title')}
+              </h1>
+              <p className="mt-3 max-w-md text-base leading-relaxed text-slate1">{t('pro.auth.subtitle')}</p>
+
+              <div role="tablist" aria-label={t('pro.auth.title')} className="mt-7 grid grid-cols-2 gap-1 rounded-xl bg-paper-2 p-1">
+                {(['signin', 'signup'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === m}
+                    onClick={() => switchMode(m)}
+                    className={cn(
+                      'min-h-[44px] rounded-lg text-[15px] font-semibold transition-colors',
+                      mode === m ? 'seg-active' : 'text-slate1 hover:text-ink',
+                    )}
+                  >
+                    {m === 'signin' ? t('pro.auth.tabSignIn') : t('pro.auth.tabSignUp')}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={onGoogle}
+                disabled={googleBusy}
+                className="mt-6 inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-ink/20 bg-card text-[15px] font-semibold text-ink transition-colors hover:border-ink/40 disabled:opacity-60"
+              >
+                <GoogleIcon className="h-5 w-5" />
+                {t('pro.auth.google')}
+              </button>
+
+              <div className="my-6 flex items-center gap-3 text-sm text-slate1" aria-hidden>
+                <span className="h-px flex-1 bg-line" />
+                {t('pro.auth.or')}
+                <span className="h-px flex-1 bg-line" />
+              </div>
+
+              <form onSubmit={onSubmit} noValidate className="space-y-5">
+                <Field label={t('pro.auth.email')} error={errors.email?.message}>
+                  <Input type="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} {...form.register('email')} />
+                </Field>
+
+                <Field
+                  label={t('pro.auth.password')}
+                  hint={mode === 'signup' ? t('pro.auth.passwordHint') : undefined}
+                  error={errors.password?.message}
+                >
+                  <PasswordInput
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((v) => !v)}
+                    labels={{ show: t('pro.auth.showPassword'), hide: t('pro.auth.hidePassword') }}
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    {...form.register('password')}
+                  />
+                </Field>
+
+                {mode === 'signin' && (
+                  <div className="-mt-2 text-right">
+                    <button type="button" onClick={onForgot} className="py-1 text-sm font-semibold text-slate1 underline-offset-4 hover:text-strong hover:underline">
+                      {t('pro.auth.forgot')}
+                    </button>
+                  </div>
+                )}
+
+                {formError && (
+                  <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3.5 py-3 text-sm font-medium text-destructive">
+                    {t(formError)}
+                  </p>
+                )}
+
+                <button type="submit" className="btn-amber w-full" disabled={submitting}>
+                  {submitting ? t('pro.auth.submitting') : mode === 'signin' ? t('pro.auth.submitSignIn') : t('pro.auth.submitSignUp')}
+                </button>
+
+                {mode === 'signup' && (
+                  <p className="text-[13px] leading-relaxed text-slate1">
+                    <TermsNotice />
+                  </p>
+                )}
+              </form>
+
+              <p className="mt-8 border-t border-line pt-6 text-[15px] text-slate1">
+                {t('pro.auth.consumerPrompt')}{' '}
+                <Link to="/auth" className="font-semibold text-strong underline-offset-4 hover:underline">
+                  {t('pro.auth.consumerLink')}
+                </Link>
+              </p>
+            </>
+          )}
+        </section>
+
+        <HowItWorks />
+      </div>
+    </ProShell>
+  );
+}
+
+function TermsNotice() {
+  const { t } = useI18n();
+  // Split the sentence around its two placeholders so each becomes a link.
+  const parts = t('pro.auth.termsNotice').split(/(\{terms\}|\{privacy\})/);
+  return (
+    <>
+      {parts.map((part, i) =>
+        part === '{terms}' ? (
+          <Link key={i} to="/legal/terms" className="font-semibold text-ink underline underline-offset-2">
+            {t('pro.auth.termsLink')}
+          </Link>
+        ) : part === '{privacy}' ? (
+          <Link key={i} to="/legal/privacy" className="font-semibold text-ink underline underline-offset-2">
+            {t('pro.auth.privacyLink')}
+          </Link>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+function HowItWorks() {
+  const { t } = useI18n();
+  const steps = [
+    { title: t('pro.auth.step1Title'), body: t('pro.auth.step1Body') },
+    { title: t('pro.auth.step2Title'), body: t('pro.auth.step2Body') },
+    { title: t('pro.auth.step3Title'), body: t('pro.auth.step3Body') },
+  ];
+  return (
+    <aside className="relative self-start overflow-hidden rounded-2xl bg-navy-900 p-6 text-chalk md:p-10 lg:mt-2">
+      <span aria-hidden className="absolute bottom-0 right-0 h-5 w-5 bg-amber" />
+      <h2 className="font-display text-2xl leading-tight text-chalk md:text-[28px]">{t('pro.auth.stepsTitle')}</h2>
+      <ol className="mt-7 space-y-7">
+        {steps.map((s, i) => (
+          <li key={s.title} className="grid grid-cols-[2.25rem_1fr] gap-4">
+            <span className="font-display text-[28px] leading-none text-amber num" style={{ fontWeight: 600 }}>
+              {i + 1}
+            </span>
+            <div>
+              <h3 className="font-sans text-base font-semibold text-chalk">{s.title}</h3>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-chalk/70">{s.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </aside>
+  );
+}
+
+type PasswordInputProps = React.ComponentPropsWithoutRef<typeof Input> & {
+  visible: boolean;
+  onToggle: () => void;
+  labels: { show: string; hide: string };
+};
+
+// forwardRef: react-hook-form reads uncontrolled values through the ref.
+const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(({ visible, onToggle, labels, ...props }, ref) => (
+  <div className="relative">
+    <Input ref={ref} type={visible ? 'text' : 'password'} className="pr-12" {...props} />
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate1 hover:text-ink"
+      aria-label={visible ? labels.hide : labels.show}
+      aria-pressed={visible}
+    >
+      {visible ? <EyeOff className="h-[18px] w-[18px]" aria-hidden /> : <Eye className="h-[18px] w-[18px]" aria-hidden />}
+    </button>
+  </div>
+));
+PasswordInput.displayName = 'PasswordInput';

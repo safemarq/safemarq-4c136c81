@@ -71,7 +71,7 @@ export default function TopRatedThisWeek() {
 
         <div className="grid lg:grid-cols-3 gap-4">
           {COLUMNS.map(col => (
-            <div key={col.region} className="bg-white border border-[#E5E5E5] rounded-md">
+            <div key={col.region} className="bg-card border border-[#E5E5E5] rounded-md">
               <div className="px-4 py-3 border-b border-[#E5E5E5] bg-[#F5F5F5] rounded-t-md">
                 <p className="text-sm font-semibold text-[#0F0F0F]">{col.region}</p>
               </div>

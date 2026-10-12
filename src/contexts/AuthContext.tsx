@@ -1,65 +1,105 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { AuthError, Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+
+type Result = { error: AuthError | null };
+type SignUpResult = Result & {
+  /** Supabase hides existing accounts behind a fake success: no identity is returned. */
+  alreadyExists: boolean;
+  /** Email confirmation is on: no session until the link is clicked. */
+  needsConfirmation: boolean;
+};
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  /** True while the user arrived from a password-reset email. */
+  recovering: boolean;
+  signUp: (email: string, password: string, displayName?: string, redirectPath?: string) => Promise<SignUpResult>;
+  signIn: (email: string, password: string) => Promise<Result>;
+  signInWithGoogle: (redirectPath: string) => Promise<Result>;
+  resendConfirmation: (email: string, redirectPath: string) => Promise<Result>;
+  requestPasswordReset: (email: string, redirectPath: string) => Promise<Result>;
+  updatePassword: (password: string) => Promise<Result>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const absolute = (path: string) => `${window.location.origin}${path.startsWith('/') ? path : `/${path}`}`;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Subscribe first so no event between getSession() and subscription is lost.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
+      setSession(next);
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true);
+      if (event === 'USER_UPDATED' || event === 'SIGNED_OUT') setRecovering(false);
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName },
-        emailRedirectTo: window.location.origin,
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user: session?.user ?? null,
+      session,
+      loading,
+      recovering,
+      signUp: async (email, password, displayName, redirectPath = '/') => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: displayName ? { display_name: displayName } : undefined, emailRedirectTo: absolute(redirectPath) },
+        });
+        return {
+          error,
+          alreadyExists: !error && !!data.user && (data.user.identities?.length ?? 0) === 0,
+          needsConfirmation: !error && !data.session,
+        };
       },
-    });
-    return { error: error as Error | null };
-  };
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+      signIn: async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return { error };
+      },
+      signInWithGoogle: async (redirectPath) => {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: absolute(redirectPath), queryParams: { prompt: 'select_account' } },
+        });
+        return { error };
+      },
+      resendConfirmation: async (email, redirectPath) => {
+        const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: absolute(redirectPath) } });
+        return { error };
+      },
+      requestPasswordReset: async (email, redirectPath) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: absolute(redirectPath) });
+        return { error };
+      },
+      updatePassword: async (password) => {
+        const { error } = await supabase.auth.updateUser({ password });
+        return { error };
+      },
+      signOut: async () => {
+        await supabase.auth.signOut();
+      },
+    }),
+    [session, loading, recovering],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

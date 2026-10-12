@@ -43,7 +43,7 @@ const Index = () => {
         ]}
       />
       <SafemarqHeader />
-      <main>
+      <main id="contenu">
         <SafemarqHero count={count} />
         <PriceTruth />
         <RegionsBlock />

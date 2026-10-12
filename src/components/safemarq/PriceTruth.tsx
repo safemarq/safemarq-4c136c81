@@ -11,7 +11,7 @@ export default function PriceTruth() {
   const saving = Math.round(((340 - 180) / 340) * 100);
 
   return (
-    <section ref={ref} className="border-y hairline bg-white">
+    <section ref={ref} className="border-y hairline bg-card">
       <motion.div variants={staggerParent} {...inViewProps} className="container-editorial py-16 md:py-24">
         <motion.p variants={fadeUp} className="eyebrow">Comparatif choc · Vidange complète berline diesel</motion.p>
         <motion.h2
@@ -51,23 +51,23 @@ export default function PriceTruth() {
           </motion.div>
 
           {/* Indépendant */}
-          <motion.div variants={fadeUp} className="relative p-8 rounded-xl bg-navy-900 text-paper overflow-hidden">
+          <motion.div variants={fadeUp} className="relative p-8 rounded-xl bg-navy-900 text-chalk overflow-hidden">
             <div className="absolute -top-16 -right-16 w-64 h-64 bg-amber/20 rounded-full blur-3xl" />
             <div className="flex items-center justify-between relative">
               <span className="text-[11px] uppercase tracking-[0.14em] font-semibold text-amber">Garage indépendant</span>
-              <span className="text-xs text-slate2">Score SafeMarq ≥ 75</span>
+              <span className="text-xs text-chalk/70">Score SafeMarq ≥ 75</span>
             </div>
             <div className="mt-6 flex items-baseline gap-2 relative">
-              <span className="font-display text-paper text-6xl md:text-7xl" style={{ fontWeight: 600 }}>
+              <span className="font-display text-chalk text-6xl md:text-7xl" style={{ fontWeight: 600 }}>
                 <AnimatedNumber value={180} /> €
               </span>
             </div>
-            <p className="font-display text-slate2 text-sm mt-2">
+            <p className="font-display text-chalk/70 text-sm mt-2">
               Coût moyen · main d'œuvre 55 €/h · pièces équivalentes
             </p>
             <div className="mt-8 space-y-2 relative">
               {['RDV sous 24-72 h', 'Choix pièces OEM ou premium', 'Devis écrit, ligne par ligne'].map(x => (
-                <div key={x} className="flex items-center gap-2 text-sm text-slate2">
+                <div key={x} className="flex items-center gap-2 text-sm text-chalk/70">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber" /> {x}
                 </div>
               ))}
@@ -96,7 +96,7 @@ export default function PriceTruth() {
           </div>
           <div className="mt-4 flex items-center justify-between text-xs text-slate1">
             <span>Écart mesuré sur 240 devis · octobre 2025</span>
-            <a href="#method" className="inline-flex items-center gap-1 font-semibold text-ink hover:text-navy-900">
+            <a href="#method" className="inline-flex items-center gap-1 font-semibold text-ink hover:text-strong">
               Méthodologie complète <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>

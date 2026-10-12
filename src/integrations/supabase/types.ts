@@ -203,6 +203,68 @@ export type Database = {
           },
         ]
       }
+      garage_submissions: {
+        Row: {
+          brand: string | null
+          city: string
+          created_at: string
+          created_garage_id: string | null
+          id: string
+          name: string
+          phone: string | null
+          postal_code: string
+          review_note: string | null
+          reviewed_at: string | null
+          status: string
+          street: string
+          trades: string[]
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          brand?: string | null
+          city: string
+          created_at?: string
+          created_garage_id?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          postal_code: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          status?: string
+          street: string
+          trades: string[]
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          brand?: string | null
+          city?: string
+          created_at?: string
+          created_garage_id?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          postal_code?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          status?: string
+          street?: string
+          trades?: string[]
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garage_submissions_created_garage_id_fkey"
+            columns: ["created_garage_id"]
+            isOneToOne: false
+            referencedRelation: "garages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       garages: {
         Row: {
           address: string
@@ -225,6 +287,7 @@ export type Database = {
           reviews_count: number
           slug: string
           specialty: string | null
+          tier: Database["public"]["Enums"]["garage_tier"]
           type: string
           updated_at: string
           vehicle_types: Json
@@ -252,6 +315,7 @@ export type Database = {
           reviews_count?: number
           slug: string
           specialty?: string | null
+          tier?: Database["public"]["Enums"]["garage_tier"]
           type: string
           updated_at?: string
           vehicle_types?: Json
@@ -279,6 +343,7 @@ export type Database = {
           reviews_count?: number
           slug?: string
           specialty?: string | null
+          tier?: Database["public"]["Enums"]["garage_tier"]
           type?: string
           updated_at?: string
           vehicle_types?: Json
@@ -369,6 +434,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pro_accounts: {
+        Row: {
+          account_type: Database["public"]["Enums"]["pro_account_type"]
+          bce_number: string
+          business_email: string
+          city: string
+          company_name: string
+          contact_locale: string
+          created_at: string
+          kyc_status: Database["public"]["Enums"]["kyc_status"]
+          phone: string
+          postal_code: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          street: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["pro_account_type"]
+          bce_number: string
+          business_email: string
+          city: string
+          company_name: string
+          contact_locale?: string
+          created_at?: string
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          phone: string
+          postal_code: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          street: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["pro_account_type"]
+          bce_number?: string
+          business_email?: string
+          city?: string
+          company_name?: string
+          contact_locale?: string
+          created_at?: string
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          phone?: string
+          postal_code?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          street?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -616,6 +741,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_garage_submission: {
+        Args: { p_note?: string | null; p_submission_id: string }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -625,6 +754,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      is_valid_bce: { Args: { n: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -649,9 +779,30 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_claimable_garages: {
+        Args: { q: string }
+        Returns: {
+          address: string
+          id: string
+          managed: boolean
+          name: string
+          slug: string
+        }[]
+      }
+      submit_pro_onboarding: {
+        Args: {
+          p_account?: Json | null
+          p_claim_garage_id?: string | null
+          p_new_garage?: Json | null
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "garage_owner"
+      garage_tier: "free" | "pro" | "premium"
+      kyc_status: "pending" | "needs_info" | "approved" | "rejected"
+      pro_account_type: "independent_garage" | "dealer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -780,6 +931,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "garage_owner"],
+      garage_tier: ["free", "pro", "premium"],
+      kyc_status: ["pending", "needs_info", "approved", "rejected"],
+      pro_account_type: ["independent_garage", "dealer"],
     },
   },
 } as const

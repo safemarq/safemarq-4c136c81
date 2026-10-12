@@ -44,3 +44,25 @@ export const cityFromAddress = (address: string): string | null => {
   }
   return null;
 };
+
+/** Local names where they differ from French (Brussel, Antwerpen, Lüttich…). */
+const CITY_NAMES: Record<string, Partial<Record<'nl' | 'de' | 'en', string>>> = {
+  bruxelles: { nl: 'Brussel', de: 'Brüssel', en: 'Brussels' },
+  anvers: { nl: 'Antwerpen', de: 'Antwerpen', en: 'Antwerp' },
+  gand: { nl: 'Gent', de: 'Gent', en: 'Ghent' },
+  liege: { nl: 'Luik', de: 'Lüttich' },
+  namur: { nl: 'Namen' },
+  bruges: { nl: 'Brugge', de: 'Brügge' },
+  louvain: { nl: 'Leuven', de: 'Löwen', en: 'Leuven' },
+  mons: { nl: 'Bergen' },
+  malines: { nl: 'Mechelen', de: 'Mecheln', en: 'Mechelen' },
+  wavre: { nl: 'Waver' },
+  tournai: { nl: 'Doornik' },
+  ostende: { nl: 'Oostende', en: 'Ostend' },
+  courtrai: { nl: 'Kortrijk', de: 'Kortrijk', en: 'Kortrijk' },
+};
+
+export const cityName = (slug: string, locale: 'fr' | 'nl' | 'de' | 'en'): string => {
+  const fr = getCity(slug)?.name ?? slug;
+  return locale === 'fr' ? fr : CITY_NAMES[slug]?.[locale] ?? fr;
+};

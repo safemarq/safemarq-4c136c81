@@ -25,7 +25,7 @@ export default function RegionsBlock() {
               Trois régions. Trois marchés. <em className="italic">Un seul standard.</em>
             </motion.h2>
           </div>
-          <motion.a variants={fadeUp} href="#compare" className="text-sm font-semibold text-ink hover:text-navy-900 inline-flex items-center gap-1">
+          <motion.a variants={fadeUp} href="#compare" className="text-sm font-semibold text-ink hover:text-strong inline-flex items-center gap-1">
             Voir toute la carte <ArrowUpRight className="w-4 h-4" />
           </motion.a>
         </div>

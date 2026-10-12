@@ -5,11 +5,11 @@ export default {
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
-    container: { center: true, padding: "1rem", screens: { "2xl": "1240px" } },
+    container: { center: true, padding: "1rem", screens: { "2xl": "1200px" } },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Fraunces', 'Source Serif Pro', 'Georgia', 'serif'],
+        sans: ['"Schibsted Grotesk"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -25,8 +25,10 @@ export default {
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
         surface: { DEFAULT: "hsl(var(--surface))", elevated: "hsl(var(--surface-elevated))" },
-        paper: "hsl(var(--paper))",
+        paper: { DEFAULT: "hsl(var(--paper))", 2: "hsl(var(--paper-2))" },
         ink: "hsl(var(--ink))",
+        strong: "hsl(var(--strong))",
+        chalk: "hsl(var(--chalk))",
         line: "hsl(var(--line))",
         navy: {
           900: "hsl(var(--navy-900))",

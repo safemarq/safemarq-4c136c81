@@ -17,7 +17,7 @@ export default function TopRegions() {
   const hovered = REGIONS.find(r => r.id === hover);
 
   return (
-    <section className="bg-white border-b border-[#E5E5E5]">
+    <section className="bg-card border-b border-[#E5E5E5]">
       <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-wider text-[#0052CC] font-semibold">Couverture nationale</p>
@@ -67,7 +67,7 @@ export default function TopRegions() {
             <ul className="divide-y divide-[#E5E5E5] border border-[#E5E5E5] rounded-md bg-[#FAFAFA]">
               {CITIES.map((c, i) => (
                 <li key={c.name}>
-                  <a href="#" className="flex items-center justify-between px-4 py-2.5 hover:bg-white text-sm">
+                  <a href="#" className="flex items-center justify-between px-4 py-2.5 hover:bg-card text-sm">
                     <span className="flex items-center gap-3">
                       <span className="text-[#999] font-mono text-xs w-5">{i + 1}</span>
                       <span className="text-[#0F0F0F] font-medium">{c.name}</span>

@@ -173,7 +173,8 @@ export function useApproveClaim() {
       qc.invalidateQueries({ queryKey: ['admin-claims'] });
       qc.invalidateQueries({ queryKey: ['admin-stats'] });
     },
-    onError: () => toast.error('Erreur lors de l\'approbation'),
+    onError: (e: Error) =>
+      toast.error(e.message.includes('PRO_NOT_APPROVED') ? "Validez d'abord le compte pro du demandeur (onglet Comptes pro)." : "Erreur lors de l'approbation"),
   });
 }
 

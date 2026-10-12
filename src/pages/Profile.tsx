@@ -112,7 +112,7 @@ const Profile = () => {
                 <Button variant="outline" size="sm" className="text-xs"><BarChart3 className="w-3.5 h-3.5 mr-1" /> Dashboard Pro</Button>
               </Link>
             ) : (
-              <Link to="/pro/claim">
+              <Link to="/pro/connexion">
                 <Button variant="outline" size="sm" className="text-xs"><Briefcase className="w-3.5 h-3.5 mr-1" /> Espace Pro</Button>
               </Link>
             )}

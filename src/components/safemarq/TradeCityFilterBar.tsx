@@ -23,7 +23,7 @@ export default function TradeCityFilterBar({ trade, city, compact }: Props) {
   return (
     <form
       onSubmit={submit}
-      className={`bg-white border hairline rounded-xl p-2 flex flex-col md:flex-row gap-2 shadow-sm ${compact ? '' : 'max-w-3xl'}`}
+      className={`bg-card border hairline rounded-xl p-2 flex flex-col md:flex-row gap-2 shadow-sm ${compact ? '' : 'max-w-3xl'}`}
     >
       <div className="flex items-center gap-2 flex-1 px-3 border-b md:border-b-0 md:border-r hairline">
         <Search className="w-4 h-4 text-slate1 shrink-0" aria-hidden />

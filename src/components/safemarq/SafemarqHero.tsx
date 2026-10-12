@@ -1,11 +1,11 @@
 import { Search, MapPin, ShieldCheck, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import ScoreSeal from './ScoreSeal';
 import AnimatedNumber from './AnimatedNumber';
 import { EASE, heroStagger, fadeUp } from './motion';
-import { TRADES } from '@/lib/trades';
+import { TRADES, getTrade } from '@/lib/trades';
 import { CITIES, slugifyCity, getCity } from '@/lib/cities';
 
 const POPULAR: { label: string; trade: string; city: string }[] = [
@@ -27,7 +27,17 @@ function resolveCity(input: string): string | null {
 
 export default function SafemarqHero({ count = 8420 }: { count?: number }) {
   const navigate = useNavigate();
-  const [trade, setTrade] = useState('carrosserie');
+  const [params] = useSearchParams();
+  const requestedTrade = getTrade(params.get('metier') ?? undefined)?.slug;
+  const [trade, setTrade] = useState(requestedTrade ?? 'carrosserie');
+  const cityRef = useRef<HTMLInputElement>(null);
+
+  // Header links land here with ?metier=…: preselect it and ask for the city.
+  useEffect(() => {
+    if (!requestedTrade) return;
+    setTrade(requestedTrade);
+    cityRef.current?.focus({ preventScroll: true });
+  }, [requestedTrade]);
   const [cityInput, setCityInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +68,7 @@ export default function SafemarqHero({ count = 8420 }: { count?: number }) {
               style={{ fontSize: 'clamp(2.4rem, 5.4vw, 4.2rem)', fontWeight: 500 }}
             >
               Les meilleurs garages de Belgique,<br />
-              <em className="italic text-navy-900">notés par ceux qui y sont allés.</em>
+              <em className="italic text-strong">notés par ceux qui y sont allés.</em>
             </motion.h1>
             <motion.p variants={fadeUp} className="mt-6 text-lg text-slate1 max-w-xl leading-relaxed">
               <AnimatedNumber value={count} className="text-ink font-semibold" /> établissements passés au crible.
@@ -67,8 +77,9 @@ export default function SafemarqHero({ count = 8420 }: { count?: number }) {
 
             <motion.form
               variants={fadeUp}
+              id="recherche"
               onSubmit={(e) => { e.preventDefault(); go(); }}
-              className="mt-8 bg-white border hairline rounded-xl p-2 flex flex-col md:flex-row gap-2 shadow-md max-w-2xl"
+              className="scroll-mt-24 mt-8 bg-card border hairline rounded-xl p-2 flex flex-col md:flex-row gap-2 shadow-md max-w-2xl"
             >
               <div className="flex items-center gap-2 flex-1 px-3 border-b md:border-b-0 md:border-r hairline">
                 <Search className="w-4 h-4 text-slate1 shrink-0" aria-hidden />
@@ -86,6 +97,7 @@ export default function SafemarqHero({ count = 8420 }: { count?: number }) {
                 <MapPin className="w-4 h-4 text-slate1 shrink-0" aria-hidden />
                 <label className="sr-only" htmlFor="hero-city">Quelle ville ?</label>
                 <input
+                  ref={cityRef}
                   id="hero-city"
                   type="text"
                   value={cityInput}
@@ -108,7 +120,7 @@ export default function SafemarqHero({ count = 8420 }: { count?: number }) {
                 <button
                   key={p.label}
                   onClick={() => go(p.trade, p.city)}
-                  className="text-xs text-ink border hairline bg-white px-3 py-1.5 rounded-full hover:border-ink/40 hover:bg-white/80 transition-colors"
+                  className="text-xs text-ink border hairline bg-card px-3 py-1.5 rounded-full hover:border-ink/40 hover:bg-white/80 transition-colors"
                 >
                   {p.label}
                 </button>
@@ -133,7 +145,7 @@ export default function SafemarqHero({ count = 8420 }: { count?: number }) {
           >
             <div className="relative">
               <div className="absolute -inset-10 rounded-full bg-amber/10 blur-3xl -z-10" />
-              <div className="bg-white border hairline rounded-2xl p-8 shadow-lg">
+              <div className="bg-card border hairline rounded-2xl p-8 shadow-lg">
                 <ScoreSeal score={88} grade="Excellent · A+" size={240} label="Garage Delvaux · Namur" />
                 <div className="mt-6 pt-6 border-t hairline grid grid-cols-3 gap-3 text-center">
                   <div>

@@ -108,7 +108,7 @@ const GarageRow = ({ garage }: { garage: AdminGarage }) => {
           >
             {garage.verified ? <BadgeX className="w-3.5 h-3.5" /> : <BadgeCheck className="w-3.5 h-3.5" />}
           </Button>
-          <Link to={`/garage/${garage.id}`} target="_blank" rel="noopener noreferrer">
+          <Link to={`/garage/${garage.slug}`} target="_blank" rel="noopener noreferrer">
             <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-foreground" title="Voir la fiche">
               <ExternalLink className="w-3.5 h-3.5" />
             </Button>

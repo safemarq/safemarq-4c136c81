@@ -34,7 +34,7 @@ export default function BelgianMarket() {
 
         <div className="grid md:grid-cols-3 gap-4">
           {ARTICLES.map(a => (
-            <article key={a.title} className="bg-white border border-[#E5E5E5] rounded-md overflow-hidden hover:shadow-sm transition-shadow">
+            <article key={a.title} className="bg-card border border-[#E5E5E5] rounded-md overflow-hidden hover:shadow-sm transition-shadow">
               <div className="aspect-[16/9] bg-gradient-to-br from-[#EEF4FF] to-[#E6F4EC] grid place-items-center text-5xl">
                 {a.emoji}
               </div>

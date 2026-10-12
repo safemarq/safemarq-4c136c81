@@ -8,6 +8,8 @@ interface ScoreSealProps {
   size?: number;
   label?: string;
   compact?: boolean;
+  /** "onNavy" when the seal sits on a navy band (fixed light text). */
+  tone?: 'default' | 'onNavy';
 }
 
 function colorFor(score: number) {
@@ -16,7 +18,8 @@ function colorFor(score: number) {
   return 'hsl(var(--coral))';
 }
 
-export default function ScoreSeal({ score, grade, size = 220, label = 'Score SafeMarq', compact = false }: ScoreSealProps) {
+export default function ScoreSeal({ score, grade, size = 220, label = 'Score SafeMarq', compact = false, tone = 'default' }: ScoreSealProps) {
+  const onNavy = tone === 'onNavy';
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-40px' });
   const reduce = useReducedMotion();
@@ -43,7 +46,7 @@ export default function ScoreSeal({ score, grade, size = 220, label = 'Score Saf
         <svg width={size} height={size} className="-rotate-90">
           <circle
             cx={size / 2} cy={size / 2} r={r}
-            fill="none" stroke="hsl(var(--line))" strokeWidth={stroke}
+            fill="none" stroke={onNavy ? 'hsl(var(--chalk) / 0.14)' : 'hsl(var(--line))'} strokeWidth={stroke}
           />
           <motion.circle
             cx={size / 2} cy={size / 2} r={r}
@@ -52,19 +55,19 @@ export default function ScoreSeal({ score, grade, size = 220, label = 'Score Saf
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display num text-ink leading-none" style={{ fontSize: size * 0.32, fontWeight: 600 }}>
+          <span className={`font-display num leading-none ${onNavy ? 'text-chalk' : 'text-ink'}`} style={{ fontSize: size * 0.32, fontWeight: 600 }}>
             {display}
           </span>
-          <span className="text-[10px] tracking-[0.18em] uppercase text-slate1 mt-1 font-semibold">/ 100</span>
+          <span className={`mt-1 text-xs font-semibold num ${onNavy ? 'text-chalk/60' : 'text-slate1'}`}>/ 100</span>
         </div>
       </div>
       {!compact && (
         <div className="mt-4 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border hairline bg-white">
+          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${onNavy ? 'border-chalk/15 bg-chalk/5' : 'hairline bg-card'}`}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-            <span className="text-xs font-semibold text-ink">{grade ?? 'Évalué'}</span>
+            <span className={`text-xs font-semibold ${onNavy ? 'text-chalk' : 'text-ink'}`}>{grade ?? 'Évalué'}</span>
           </div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-slate1 mt-3 font-semibold">{label}</p>
+          <p className={`mt-3 text-[13px] font-semibold ${onNavy ? 'text-chalk/70' : 'text-slate1'}`}>{label}</p>
         </div>
       )}
     </div>

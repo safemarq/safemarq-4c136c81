@@ -48,7 +48,7 @@ const TradeCity = () => {
       <Seo title={`${title} — SafeMarq`} description={description} jsonLd={jsonLd} />
       <SafemarqHeader />
 
-      <main>
+      <main id="contenu">
         <section className="container-editorial pt-10 md:pt-14 pb-8">
           {/* Breadcrumb */}
           <nav aria-label="Fil d'ariane" className="text-xs text-slate1 flex items-center gap-1.5 flex-wrap">
@@ -71,7 +71,7 @@ const TradeCity = () => {
             className="font-display text-ink mt-3 leading-[1.05]"
             style={{ fontSize: 'clamp(2rem, 4.6vw, 3.6rem)', fontWeight: 500 }}
           >
-            Les meilleurs <em className="italic text-navy-900">{trade.labelPlural}</em><br /> à {city.name}.
+            Les meilleurs <em className="italic text-strong">{trade.labelPlural}</em><br /> à {city.name}.
           </motion.h1>
 
           <motion.p
@@ -95,7 +95,7 @@ const TradeCity = () => {
           {isLoading ? (
             <div className="py-20 text-center text-slate1 text-sm">Chargement du classement…</div>
           ) : ranked.length === 0 ? (
-            <div className="bg-white border hairline rounded-2xl">
+            <div className="bg-card border hairline rounded-2xl">
               <EmptyState
                 icon={SearchIcon}
                 title={`Aucun ${trade.label.toLowerCase()} noté à ${city.name} pour l'instant`}
@@ -153,7 +153,7 @@ const TradeCity = () => {
                     a: `Oui — le bouton "Demander un devis" transmet votre demande au garage choisi, sans intermédiaire.`,
                   },
                 ].map((f) => (
-                  <details key={f.q} className="group border hairline rounded-lg bg-white p-4 open:shadow-sm">
+                  <details key={f.q} className="group border hairline rounded-lg bg-card p-4 open:shadow-sm">
                     <summary className="cursor-pointer text-sm font-semibold text-ink flex items-center gap-2">
                       <MapPin className="w-3.5 h-3.5 text-amber" /> {f.q}
                     </summary>

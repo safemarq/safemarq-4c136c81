@@ -20,7 +20,7 @@ export default function RankedGarageRow({ garage, citySlug }: Props) {
       variants={fadeUp}
       whileHover={{ y: -4 }}
       transition={cardHover}
-      className={`relative bg-white border rounded-xl p-5 md:p-6 flex flex-col md:flex-row gap-5 md:gap-6 items-start md:items-center shadow-sm hover:shadow-md ${isTop ? 'border-amber/70 ring-1 ring-amber/30' : 'hairline'}`}
+      className={`relative bg-card border rounded-xl p-5 md:p-6 flex flex-col md:flex-row gap-5 md:gap-6 items-start md:items-center shadow-sm hover:shadow-md ${isTop ? 'border-amber/70 ring-1 ring-amber/30' : 'hairline'}`}
     >
       {isTop && (
         <span className="absolute -top-3 left-5 inline-flex items-center gap-1.5 bg-amber text-amber-d text-[11px] font-semibold px-2.5 py-1 rounded-full">
@@ -59,7 +59,7 @@ export default function RankedGarageRow({ garage, citySlug }: Props) {
       <div className="flex md:flex-col gap-2 md:items-end shrink-0">
         <Link
           to={`/garage/${garage.slug}`}
-          className="text-xs font-semibold text-ink border hairline px-3 py-2 rounded-lg hover:border-ink/40 bg-white"
+          className="text-xs font-semibold text-ink border hairline px-3 py-2 rounded-lg hover:border-ink/40 bg-card"
         >
           Voir la fiche
         </Link>

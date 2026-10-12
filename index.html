@@ -3,53 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0F172A" />
+    <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0A101B" media="(prefers-color-scheme: dark)" />
 
-    <title>SAFEMARQ — Comparez les garages automobiles en Belgique</title>
-    <meta name="description" content="Trouvez et comparez les meilleurs garages automobiles près de chez vous. Avis vérifiés, devis instantanés, score de confiance SAFEMARQ.">
-    <meta name="author" content="SAFEMARQ" />
-    
+    <!-- Applies the saved theme and language before first paint (no flash). -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('safemarq-theme');
+          var dark = t === 'dark' || ((!t || t === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+          var l = localStorage.getItem('safemarq-locale');
+          var map = { fr: 'fr-BE', nl: 'nl-BE', de: 'de-BE', en: 'en' };
+          if (l && map[l]) document.documentElement.lang = map[l];
+        } catch (e) {}
+      })();
+    </script>
+
+    <title>SafeMarq — Comparez les garages automobiles en Belgique</title>
+    <meta name="description" content="Trouvez et comparez les garages automobiles près de chez vous. Avis Google vérifiés et score de confiance SafeMarq indépendant." />
+    <meta name="author" content="SafeMarq" />
+
+    <link rel="preload" href="/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="SAFEMARQ" />
-    
-    
-    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49c81b26-9117-4f94-9b39-7a82f9f28a6f">
+    <meta property="og:site_name" content="SafeMarq" />
+    <meta property="og:title" content="SafeMarq — Comparez les garages automobiles en Belgique" />
+    <meta property="og:description" content="Trouvez et comparez les garages automobiles près de chez vous. Avis Google vérifiés et score de confiance SafeMarq indépendant." />
+    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49c81b26-9117-4f94-9b39-7a82f9f28a6f" />
     <meta property="og:locale" content="fr_BE" />
+    <meta property="og:locale:alternate" content="nl_BE" />
+    <meta property="og:locale:alternate" content="de_BE" />
+    <meta property="og:locale:alternate" content="en_GB" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    
-    
-    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49c81b26-9117-4f94-9b39-7a82f9f28a6f">
+    <meta name="twitter:title" content="SafeMarq — Comparez les garages automobiles en Belgique" />
+    <meta name="twitter:description" content="Trouvez et comparez les garages automobiles près de chez vous. Avis Google vérifiés et score de confiance SafeMarq indépendant." />
+    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/49c81b26-9117-4f94-9b39-7a82f9f28a6f" />
 
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/png" href="/safemarq-icon.png">
+    <link rel="icon" type="image/png" href="/safemarq-icon.png" />
     <link rel="apple-touch-icon" href="/safemarq-icon.png" />
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <meta property="og:title" content="SAFEMARQ — Comparez les garages automobiles en Belgique">
-  <meta name="twitter:title" content="SAFEMARQ — Comparez les garages automobiles en Belgique">
-  <meta property="og:description" content="Trouvez et comparez les meilleurs garages automobiles près de chez vous. Avis vérifiés, devis instantanés, score de confiance SAFEMARQ.">
-  <meta name="twitter:description" content="Trouvez et comparez les meilleurs garages automobiles près de chez vous. Avis vérifiés, devis instantanés, score de confiance SAFEMARQ.">
-</head>
+  </head>
 
   <body>
     <div id="root"></div>

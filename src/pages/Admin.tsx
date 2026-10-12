@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, LayoutDashboard, FileCheck, MessageSquare, Building2, Users, Bell } from 'lucide-react';
+import { Shield, ArrowLeft, LayoutDashboard, FileCheck, MessageSquare, Building2, Users, Bell, BadgeCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin, useAdminStats } from '@/hooks/useAdmin';
@@ -10,12 +10,15 @@ import AdminClaims from '@/components/admin/AdminClaims';
 import AdminReviews from '@/components/admin/AdminReviews';
 import AdminGarages from '@/components/admin/AdminGarages';
 import AdminUsers from '@/components/admin/AdminUsers';
+import AdminPros from '@/components/admin/AdminPros';
+import { useAdminPendingProCount } from '@/hooks/useAdminPros';
 import { toast } from 'sonner';
 
 const Admin = () => {
   const { user, loading } = useAuth();
   const { data: isAdmin, isLoading: checkingAdmin } = useIsAdmin();
   const { data: stats } = useAdminStats();
+  const { data: pendingPros = 0 } = useAdminPendingProCount();
 
   useEffect(() => {
     if (!loading && !checkingAdmin && isAdmin === false) {
@@ -75,8 +78,17 @@ const Admin = () => {
           <AdminStats />
 
           {/* Tabs */}
-          <Tabs defaultValue={pendingClaims > 0 ? 'claims' : 'overview'}>
-            <TabsList className="w-full grid grid-cols-5 h-auto">
+          <Tabs defaultValue={pendingPros > 0 ? 'pros' : pendingClaims > 0 ? 'claims' : 'overview'}>
+            <TabsList className="w-full grid grid-cols-6 h-auto">
+              <TabsTrigger value="pros" className="text-xs py-2 flex gap-1.5 items-center relative">
+                <BadgeCheck className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Comptes pro</span>
+                {pendingPros > 0 && (
+                  <span className="absolute -top-1 -right-1 text-[9px] font-bold bg-amber text-amber-d rounded-full w-4 h-4 flex items-center justify-center">
+                    {pendingPros > 9 ? '9+' : pendingPros}
+                  </span>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="overview" className="text-xs py-2 flex gap-1.5 items-center">
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Vue d'ensemble</span>
@@ -118,6 +130,10 @@ const Admin = () => {
                   </p>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="pros" className="mt-4">
+              <AdminPros />
             </TabsContent>
 
             <TabsContent value="claims" className="mt-4">

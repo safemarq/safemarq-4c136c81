@@ -24,7 +24,7 @@ function initials(name: string) { return name.slice(0, 1).toUpperCase(); }
 
 export default function TestimonialsBelgium() {
   return (
-    <section className="bg-white border-y hairline">
+    <section className="bg-card border-y hairline">
       <motion.div variants={staggerParent} {...inViewProps} className="container-editorial py-16 md:py-24">
         <motion.p variants={fadeUp} className="eyebrow">Sur le terrain</motion.p>
         <motion.h2
@@ -49,7 +49,7 @@ export default function TestimonialsBelgium() {
                 « {t.quote} »
               </p>
               <div className="mt-6 pt-6 border-t hairline flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-navy-900 text-paper grid place-items-center font-display text-sm" style={{ fontWeight: 600 }}>
+                <div className="w-10 h-10 rounded-full bg-navy-900 text-chalk grid place-items-center font-display text-sm" style={{ fontWeight: 600 }}>
                   {initials(t.name)}
                 </div>
                 <div className="flex-1 min-w-0">

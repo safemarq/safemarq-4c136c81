@@ -43,7 +43,7 @@ export default function TradesGrid() {
               whileHover={{ y: -3 }}
               transition={cardHover}
               onClick={() => navigate(`/?service=${encodeURIComponent(name)}`)}
-              className="card-warm p-5 text-left hover:border-ink/20 hover:shadow-md group bg-white"
+              className="card-warm p-5 text-left hover:border-ink/20 hover:shadow-md group bg-card"
             >
               <div className="flex items-start justify-between">
                 <div className="w-9 h-9 rounded-md bg-paper border hairline grid place-items-center text-ink group-hover:bg-amber group-hover:text-amber-d group-hover:border-amber transition-colors">

@@ -19,7 +19,7 @@ const STEPS = [
 
 export default function Methodology() {
   return (
-    <section id="method" className="bg-navy-900 text-paper">
+    <section id="method" className="bg-navy-900 text-chalk">
       <motion.div variants={staggerParent} {...inViewProps} className="container-editorial py-16 md:py-24">
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-14 items-start">
           <div>
@@ -31,7 +31,7 @@ export default function Methodology() {
             >
               Notre score, <em className="italic text-amber">on l'explique.</em>
             </motion.h2>
-            <motion.p variants={fadeUp} className="text-slate2 mt-4 max-w-xl">
+            <motion.p variants={fadeUp} className="text-chalk/70 mt-4 max-w-xl">
               Aucun garage ne peut acheter un meilleur score. Aucun logo sponsorisé. Nous publions la formule
               et le code de calcul.
             </motion.p>
@@ -41,8 +41,8 @@ export default function Methodology() {
                 <motion.div key={s.n} variants={fadeUp} className="flex gap-5 border-t border-white/10 pt-6">
                   <span className="font-display text-amber text-3xl num" style={{ fontWeight: 600 }}>{s.n}</span>
                   <div>
-                    <h3 className="font-display text-paper text-xl" style={{ fontWeight: 600 }}>{s.title}</h3>
-                    <p className="text-slate2 text-sm mt-2 max-w-lg leading-relaxed">{s.body}</p>
+                    <h3 className="font-display text-chalk text-xl" style={{ fontWeight: 600 }}>{s.title}</h3>
+                    <p className="text-chalk/70 text-sm mt-2 max-w-lg leading-relaxed">{s.body}</p>
                   </div>
                 </motion.div>
               ))}
@@ -51,8 +51,8 @@ export default function Methodology() {
 
           <motion.div variants={fadeUp} className="flex justify-center">
             <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur">
-              <ScoreSeal score={72} grade="Bien · B+" size={220} label="Exemple pondéré" />
-              <div className="mt-6 pt-6 border-t border-white/10 space-y-2 text-xs text-slate2">
+              <ScoreSeal score={72} grade="Bien · B+" size={220} label="Exemple pondéré" tone="onNavy" />
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-2 text-xs text-chalk/70">
                 {[
                   ['Note Google', '4,2 / 5', '40%'],
                   ['Avis vérifiés', '186', '20%'],
@@ -61,7 +61,7 @@ export default function Methodology() {
                 ].map(([k, v, w]) => (
                   <div key={k} className="flex justify-between">
                     <span>{k}</span>
-                    <span className="text-paper num">{v} <span className="text-slate2">· {w}</span></span>
+                    <span className="text-chalk num">{v} <span className="text-chalk/70">· {w}</span></span>
                   </div>
                 ))}
               </div>
