@@ -139,6 +139,7 @@ PREFERRED_ZIP = {
     'hamme': '9220',
     'neufchateau': '6840',
     'beveren': '8800',
+    'saint-nicolas': '9100',  # Sint-Niklaas, not the village near Liège
 }
 
 

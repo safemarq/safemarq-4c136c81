@@ -36,6 +36,7 @@ const Mentions = lazy(() => import('./pages/legal/Mentions.tsx'));
 const Admin = lazy(() => import('./pages/Admin.tsx'));
 const NotFound = lazy(() => import('./pages/NotFound.tsx'));
 const Ranking = lazy(() => import('./pages/Ranking.tsx'));
+const Search = lazy(() => import('./pages/Search.tsx'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,7 @@ const App = ({ initialLocale }: { initialLocale: Locale }) => (
                       <Route path="/billing/success" element={<BillingSuccess />} />
                       <Route path="/billing/cancel" element={<BillingCancel />} />
                       <Route path="/about" element={<About />} />
+                      <Route path="/recherche" element={<Search />} />
                       <Route path="/garage/:id" element={<GarageDetail />} />
                       <Route path="/legal/terms" element={<Terms />} />
                       <Route path="/legal/privacy" element={<Privacy />} />

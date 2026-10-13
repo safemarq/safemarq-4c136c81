@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Menu } from 'lucide-react';
+import { ArrowRight, ChevronDown, Menu, Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TradeList } from '@/components/search/TradeList';
@@ -18,9 +18,11 @@ import { cn } from '@/lib/utils';
 interface Props {
   /** Transparent over a hero photo until the page scrolls. */
   overlay?: boolean;
+  /** Full-width pages (search with map): align with their wider content. */
+  wide?: boolean;
 }
 
-export default function SiteHeader({ overlay = false }: Props) {
+export default function SiteHeader({ overlay = false, wide = false }: Props) {
   const { t } = useI18n();
   const { user } = useAuth();
   const { pathname } = useLocation();
@@ -46,7 +48,7 @@ export default function SiteHeader({ overlay = false }: Props) {
   const accountHref = user ? '/profile' : '/auth';
 
   const navItem = cn(
-    'rounded-md px-1 py-2 text-[15px] font-medium transition-colors',
+    'whitespace-nowrap rounded-md px-1 py-2 text-[15px] font-medium transition-colors',
     onDark ? 'text-chalk/85 hover:text-chalk' : 'text-slate1 hover:text-strong',
   );
 
@@ -64,10 +66,10 @@ export default function SiteHeader({ overlay = false }: Props) {
       >
         {t('nav.skipToContent')}
       </a>
-      <div className="container-editorial flex h-16 items-center gap-8 md:h-[72px]">
+      <div className={cn('flex h-16 items-center gap-6 md:h-[72px] xl:gap-8', wide ? 'mx-auto max-w-[1440px] px-4 md:px-6' : 'container-editorial')}>
         <BrandLink onDark={onDark} />
 
-        <nav className="hidden items-center gap-6 lg:flex" aria-label={t('nav.menu')}>
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-6" aria-label={t('nav.menu')}>
           <Popover open={tradesOpen} onOpenChange={setTradesOpen}>
             <PopoverTrigger className={cn(navItem, 'group inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber')}>
               {t('nav.allTrades')}
@@ -100,21 +102,35 @@ export default function SiteHeader({ overlay = false }: Props) {
           <Link to={vehicleHref('voiture')} className={navItem}>
             {t('nav.garages')}
           </Link>
-          <Link to={tradeHref('carrosserie')} className={navItem}>
+          <Link to={tradeHref('carrosserie')} className={cn(navItem, 'hidden xl:inline')}>
             {t('nav.bodyshops')}
           </Link>
           <NavLink to="/about" className={navItem}>
             {t('nav.method')}
           </NavLink>
+          <NavLink to="/recherche" className={cn(navItem, 'hidden items-center gap-1.5 xl:inline-flex')}>
+            <Search className="h-4 w-4" aria-hidden />
+            {t('nav.search')}
+          </NavLink>
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <Link
+            to="/recherche"
+            aria-label={t('nav.search')}
+            className={cn(
+              'inline-flex h-11 w-11 items-center justify-center rounded-lg xl:hidden',
+              onDark ? 'text-chalk hover:bg-chalk/10' : 'text-ink hover:bg-paper-2',
+            )}
+          >
+            <Search className="h-[22px] w-[22px]" aria-hidden />
+          </Link>
           <LanguageMenu onDark={onDark} className="hidden sm:inline-flex" />
           <ThemeMenu onDark={onDark} />
           <Link
             to={accountHref}
             className={cn(
-              'hidden h-10 items-center rounded-lg px-3 text-[15px] font-semibold transition-colors md:inline-flex',
+              'hidden h-10 items-center whitespace-nowrap rounded-lg px-3 text-[15px] font-semibold transition-colors md:inline-flex',
               onDark ? 'text-chalk hover:bg-chalk/10' : 'text-ink hover:bg-paper-2',
             )}
           >
@@ -123,7 +139,7 @@ export default function SiteHeader({ overlay = false }: Props) {
           <Link
             to="/pro/connexion"
             className={cn(
-              'ml-1 hidden h-10 items-center rounded-lg border px-3.5 text-[15px] font-semibold transition-colors md:inline-flex',
+              'ml-1 hidden h-10 items-center whitespace-nowrap rounded-lg border px-3.5 text-[15px] font-semibold transition-colors md:inline-flex',
               onDark ? 'border-chalk/40 text-chalk hover:bg-chalk/10' : 'border-ink/20 text-ink hover:border-ink/40 hover:bg-paper-2',
             )}
           >
@@ -153,6 +169,7 @@ export default function SiteHeader({ overlay = false }: Props) {
                 {[
                   { to: vehicleHref('voiture'), label: t('nav.garages') },
                   { to: tradeHref('carrosserie'), label: t('nav.bodyshops') },
+                  { to: '/recherche', label: t('nav.search') },
                   { to: '/about', label: t('nav.method') },
                   { to: accountHref, label: user ? t('nav.account') : t('nav.signIn') },
                 ].map((item) => (

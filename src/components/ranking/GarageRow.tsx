@@ -84,10 +84,10 @@ export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowG
 
       {!compact && (
         <div className="relative z-10 flex gap-2 md:flex-col md:items-stretch">
-          <Link to={`/garage/${garage.slug}#devis`} className="btn-amber min-h-[44px] flex-1 px-4 text-[15px]">
+          <Link to={`/garage/${garage.slug}#devis`} className="btn-amber min-h-[44px] flex-1 whitespace-nowrap px-2 text-[14px] sm:px-4 sm:text-[15px]">
             {t('ranking.requestQuote')}
           </Link>
-          <Link to={`/garage/${garage.slug}`} className="btn-ghost-navy min-h-[44px] flex-1 px-4 text-[15px]">
+          <Link to={`/garage/${garage.slug}`} className="btn-ghost-navy min-h-[44px] flex-1 whitespace-nowrap px-2 text-[14px] sm:px-4 sm:text-[15px]">
             {t('ranking.viewListing')}
           </Link>
         </div>

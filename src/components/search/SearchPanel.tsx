@@ -1,9 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronDown, LayoutGrid, Search } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Search } from 'lucide-react';
 import { useI18n } from '@/i18n/I18nProvider';
 import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
 import type { MessageKey } from '@/i18n/types';
@@ -13,7 +10,7 @@ import { DEFAULT_VEHICLE, FEATURED_TRADES, VEHICLES, offers, type TradeSlug, typ
 import { tradeIcon, vehicleIcon } from '@/lib/tradeMeta';
 import { cn } from '@/lib/utils';
 import { CityField } from './CityField';
-import { TradeList } from './TradeList';
+import { TradePicker, VehiclePicker } from './Pickers';
 
 interface Props {
   /** "hero": vehicle tabs + trade tabs. "compact": one row of pickers (ranking pages). */
@@ -229,7 +226,7 @@ export function SearchPanel({
               </button>
             );
           })}
-          <TradePicker vehicle={vehicle} value={trade} onChange={setTrade} asTab />
+          <TradePicker vehicle={vehicle} value={trade} onChange={setTrade} variant="tab" />
         </div>
 
         <div className="mt-3 flex flex-col gap-2 border-t border-line pt-3 md:flex-row">
@@ -274,152 +271,5 @@ function VehicleTabs({ value, onChange }: { value: VehicleSlug; onChange: (v: Ve
         );
       })}
     </div>
-  );
-}
-
-/** Popover on desktop, bottom sheet on phones: shared shell of the two pickers. */
-function PickerShell({
-  trigger,
-  title,
-  open,
-  onOpenChange,
-  wide,
-  children,
-}: {
-  trigger: React.ReactElement;
-  title: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  wide?: boolean;
-  children: React.ReactNode;
-}) {
-  const isMobile = useIsMobile();
-  if (isMobile) {
-    return (
-      <>
-        {trigger}
-        <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
-          <DrawerContent className="max-h-[88dvh] border-line bg-card">
-            <DrawerTitle className="px-5 pb-1 pt-4 text-left font-display text-2xl font-semibold text-strong">{title}</DrawerTitle>
-            <div className="overflow-y-auto px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2">{children}</div>
-          </DrawerContent>
-        </Drawer>
-      </>
-    );
-  }
-  return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={10}
-        className={cn('max-h-[min(70vh,40rem)] overflow-y-auto rounded-2xl border-line bg-card p-5 shadow-lg', wide ? 'w-[min(56rem,calc(100vw-3rem))]' : 'w-72 p-2')}
-      >
-        {children}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-const fieldTrigger =
-  'flex h-14 w-full min-w-0 items-center gap-2 rounded-xl bg-paper-2 px-3 text-left text-[16px] font-semibold text-ink transition-colors hover:bg-line/60 md:gap-3 md:px-4';
-
-function VehiclePicker({ value, onChange }: { value: VehicleSlug; onChange: (v: VehicleSlug) => void }) {
-  const { t } = useI18n();
-  const [open, setOpen] = useState(false);
-  const Icon = vehicleIcon(value);
-  return (
-    <PickerShell
-      title={t('search.chooseVehicle')}
-      open={open}
-      onOpenChange={setOpen}
-      trigger={
-        <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={`${t('search.vehicleLabel')} : ${t(vehicleKey(value, 'label'))}`} className={fieldTrigger}>
-          <Icon className="h-5 w-5 shrink-0 text-strong" aria-hidden />
-          <span className="min-w-0 flex-1 truncate">{t(vehicleKey(value, 'short'))}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-slate1" aria-hidden />
-        </button>
-      }
-    >
-      <ul className="space-y-0.5">
-        {VEHICLES.map((v) => {
-          const VIcon = vehicleIcon(v);
-          const active = v === value;
-          return (
-            <li key={v}>
-              <button
-                type="button"
-                aria-pressed={active}
-                onClick={() => {
-                  onChange(v);
-                  setOpen(false);
-                }}
-                className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-paper-2', active && 'bg-paper-2')}
-              >
-                <VIcon className="h-5 w-5 shrink-0 text-strong" aria-hidden />
-                <span className="flex-1 text-[15px] font-semibold text-ink">{t(vehicleKey(v, 'label'))}</span>
-                {active && <Check className="h-4 w-4 text-strong" aria-hidden />}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </PickerShell>
-  );
-}
-
-/** Every trade of the vehicle. As a tab ("All services") on the hero, as a field elsewhere. */
-function TradePicker({
-  vehicle,
-  value,
-  onChange,
-  asTab,
-  allowAll,
-}: {
-  vehicle: VehicleSlug;
-  value: TradeSlug | null;
-  onChange: (slug: TradeSlug | null) => void;
-  asTab?: boolean;
-  allowAll?: boolean;
-}) {
-  const { t } = useI18n();
-  const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
-  const Icon = value ? tradeIcon(value) : LayoutGrid;
-  const label = value ? t(tradeLabelKey(value, vehicle)) : t('search.allTrades');
-
-  const trigger = asTab ? (
-    <button
-      type="button"
-      onClick={() => setOpen(true)}
-      aria-haspopup="dialog"
-      className="inline-flex min-h-[48px] shrink-0 items-center gap-2 rounded-lg px-3 text-[15px] font-semibold text-slate1 transition-colors hover:bg-paper-2 hover:text-ink"
-    >
-      <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={1.9} aria-hidden />
-      {t('search.allTrades')}
-      <ChevronDown className="h-4 w-4" aria-hidden />
-    </button>
-  ) : (
-    <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={`${t('search.tradeLabel')} : ${label}`} className={fieldTrigger}>
-      {/* Half-width on phones: the words matter more than the icon. */}
-      <Icon className="hidden h-5 w-5 shrink-0 text-strong sm:block" aria-hidden />
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      <ChevronDown className="h-4 w-4 shrink-0 text-slate1" aria-hidden />
-    </button>
-  );
-
-  return (
-    <PickerShell title={t('search.chooseTrade')} open={open} onOpenChange={setOpen} trigger={trigger} wide>
-      <TradeList
-        vehicle={vehicle}
-        selected={value}
-        allOption={allowAll}
-        columns={isMobile ? 1 : 3}
-        onSelect={(slug) => {
-          onChange(slug);
-          setOpen(false);
-        }}
-      />
-    </PickerShell>
   );
 }

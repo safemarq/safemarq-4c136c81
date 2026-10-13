@@ -935,6 +935,7 @@ export type Database = {
           p_sort?: string
           p_trade?: string | null
           p_vehicle?: string
+          p_verified_only?: boolean
         }
         Returns: {
           address: string
@@ -942,7 +943,10 @@ export type Database = {
           cover_image_url: string | null
           distance_km: number
           id: string
+          lat: number
+          lng: number
           locality: string | null
+          location_precise: boolean
           logo_url: string | null
           name: string
           postal_code: string | null
@@ -953,6 +957,19 @@ export type Database = {
           tier: Database["public"]["Enums"]["garage_tier"]
           total_count: number
           type: string
+          verified: boolean
+        }[]
+      }
+      suggest_garages: {
+        Args: { p_lat?: number | null; p_limit?: number; p_lng?: number | null; q: string }
+        Returns: {
+          distance_km: number | null
+          id: string
+          locality: string | null
+          name: string
+          postal_code: string | null
+          safemarq_score: number
+          slug: string
           verified: boolean
         }[]
       }

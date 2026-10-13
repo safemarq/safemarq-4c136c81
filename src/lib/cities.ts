@@ -64,6 +64,13 @@ export const fold = (s: string) =>
     .replace(/[’']/g, ' ')
     .trim();
 
+/** fold() plus hyphens and punctuation as spaces: "Sint-Niklaas" = "sint niklaas". */
+export const normalize = (s: string) =>
+  fold(s)
+    .replace(/[-/.,;:()!?"]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 /** The town's name in the visitor's language (Anvers / Antwerpen / Antwerp). */
 export function cityName(city: City | string, locale: Locale): string {
   const c = typeof city === 'string' ? getCity(city) : city;
@@ -174,6 +181,30 @@ export class PlaceIndex {
     const first = this.search(input, 1)[0];
     // A prefix ("nam", "luik") is clear enough; a mere substring is not.
     return first && cityAliases(first).some((n) => fold(n).startsWith(q)) ? first : null;
+  }
+
+  private phrases?: Map<string, Entry>;
+
+  /** Exact name in any language, punctuation ignored. Big towns win ties ("Halle" = Halle near Brussels). */
+  byPhrase(phrase: string): City | undefined {
+    if (!this.phrases) {
+      const rank = (e: Entry) => (e.featured ? 2 : 0) + (e.main ? 1 : 0);
+      this.phrases = new Map();
+      for (const e of this.entries) {
+        for (const name of cityAliases(e.city)) {
+          const key = normalize(name);
+          const prev = this.phrases.get(key);
+          if (!prev || rank(e) > rank(prev)) this.phrases.set(key, e);
+        }
+      }
+    }
+    return this.phrases.get(normalize(phrase))?.city;
+  }
+
+  /** The locality people mean by its postal code, or a featured town. */
+  isMajor(slug: string): boolean {
+    const e = this.entries.find((x) => x.city.slug === slug);
+    return !!e && (e.featured || e.main);
   }
 
   nearest(lat: number, lng: number): City {

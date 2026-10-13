@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ChevronRight, SearchX } from 'lucide-react';
+import { AlertCircle, ChevronRight, Map as MapIcon, SearchX } from 'lucide-react';
 import Seo from '@/components/Seo';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
@@ -11,7 +11,7 @@ import { DEFAULT_RADIUS, RADIUS_OPTIONS, useRanking, type RankingSort } from '@/
 import { useI18n } from '@/i18n/I18nProvider';
 import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
 import { getCity, cityName, nearbyCities, rememberCity, type City } from '@/lib/cities';
-import { parseRankingPath, rankingPath, type RankingTarget } from '@/lib/links';
+import { parseRankingPath, rankingPath, searchPageHref, type RankingTarget } from '@/lib/links';
 import { PHOTOS, photoSrcSet, photoUrl, tradePhoto } from '@/lib/photos';
 import { DEFAULT_VEHICLE, FEATURED_TRADES } from '@/lib/taxonomy';
 import { tradeIcon, vehicleIcon } from '@/lib/tradeMeta';
@@ -209,6 +209,14 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
               </ul>
             </div>
           )}
+
+          <Link
+            to={searchPageHref({ vehicle, trade, city: city.slug, radiusKm: radius === DEFAULT_RADIUS[vehicle] ? undefined : radius })}
+            className="mb-4 inline-flex min-h-[44px] items-center gap-2 font-semibold text-strong underline underline-offset-4"
+          >
+            <MapIcon className="h-5 w-5" aria-hidden />
+            {t('ranking.seeOnMap')}
+          </Link>
 
           <Filters
             radius={radius}

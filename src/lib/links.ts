@@ -57,3 +57,14 @@ export function vehicleHref(vehicle: VehicleSlug): string {
   const city = lastCity();
   return city ? rankingPath({ vehicle, trade: null, city: city.slug }) : searchHref(vehicle);
 }
+
+/** The search page (/recherche) with filters preset. Defaults are left out of the URL. */
+export function searchPageHref(target: Partial<RankingTarget> & { radiusKm?: number }): string {
+  const params = new URLSearchParams();
+  if (target.vehicle && target.vehicle !== DEFAULT_VEHICLE) params.set('vehicule', target.vehicle);
+  if (target.trade) params.set('metier', target.trade);
+  if (target.city) params.set('ville', target.city);
+  if (target.radiusKm) params.set('rayon', String(target.radiusKm));
+  const qs = params.toString();
+  return `/recherche${qs ? `?${qs}` : ''}`;
+}
