@@ -10,12 +10,12 @@ interface Props {
   noindex?: boolean;
 }
 
-const SITE_NAME = 'SAFEMARQ';
-const DEFAULT_DESC = 'Comparez les garages automobiles de Belgique. Avis vérifiés, devis instantanés, score de confiance SAFEMARQ.';
+const SITE_NAME = 'SafeMarq';
+const DEFAULT_DESC = 'Comparez les garages automobiles de Belgique. Classement basé sur les avis Google, qui ne s’achète pas.';
 const DEFAULT_IMAGE = '/og-image.jpg';
 
 const Seo = ({ title, description = DEFAULT_DESC, canonical, image = DEFAULT_IMAGE, type = 'website', jsonLd, noindex }: Props) => {
-  const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
+  const fullTitle = title.toLowerCase().includes('safemarq') ? title : `${title} | ${SITE_NAME}`;
   const url = canonical || (typeof window !== 'undefined' ? window.location.href : '');
 
   return (

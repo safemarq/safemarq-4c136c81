@@ -14,7 +14,7 @@ export default function SiteFooter({ className }: { className?: string }) {
   const columns: { title: string; links: { label: string; to: string }[] }[] = [
     {
       title: t('footer.explore'),
-      links: FEATURED_CITIES.map((c) => ({ label: t('footer.cityLink', { city: cityName(c, locale) }), to: `/entretien/${c}` })),
+      links: FEATURED_CITIES.map((c) => ({ label: t('footer.cityLink', { city: cityName(c, locale) }), to: `/mecanique/${c}` })),
     },
     {
       title: t('footer.trust'),
@@ -48,7 +48,7 @@ export default function SiteFooter({ className }: { className?: string }) {
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <BrandMark />
+              <BrandMark className="ring-1 ring-inset ring-chalk/20" />
               <span className="font-display text-2xl text-chalk" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>
                 SafeMarq
               </span>

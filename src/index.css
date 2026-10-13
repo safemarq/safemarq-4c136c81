@@ -1,34 +1,50 @@
 /* Self-hosted fonts (SIL OFL, see /fonts/LICENSE-*): no request to Google, no visitor IP shared. */
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Barlow Semi Condensed';
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('/fonts/fraunces-latin-ext.woff2') format('woff2');
+  font-weight: 500;
+  src: url('/fonts/barlow-sc-latin-ext-500.woff2') format('woff2');
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Barlow Semi Condensed';
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('/fonts/fraunces-latin.woff2') format('woff2');
+  font-weight: 500;
+  src: url('/fonts/barlow-sc-latin-500.woff2') format('woff2');
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 @font-face {
-  font-family: 'Fraunces';
-  font-style: italic;
+  font-family: 'Barlow Semi Condensed';
+  font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('/fonts/fraunces-latin-ext-italic.woff2') format('woff2');
+  font-weight: 600;
+  src: url('/fonts/barlow-sc-latin-ext-600.woff2') format('woff2');
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Fraunces';
-  font-style: italic;
+  font-family: 'Barlow Semi Condensed';
+  font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('/fonts/fraunces-latin-italic.woff2') format('woff2');
+  font-weight: 600;
+  src: url('/fonts/barlow-sc-latin-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/barlow-sc-latin-ext-700.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Barlow Semi Condensed';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/barlow-sc-latin-700.woff2') format('woff2');
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 @font-face {
@@ -54,6 +70,7 @@
 
 /*
  * SafeMarq design tokens
+ * Titles use Barlow Semi Condensed, drawn from road signs and number plates.
  * - "paper / ink / line / card" flip between day and night.
  * - "navy-*", "chalk", "amber", "teal", "coral" are brand constants: navy bands
  *   stay navy in both themes, and text set on them uses `chalk` (never `paper`).
@@ -74,14 +91,14 @@
     --coral: 4 68% 50%;          /* #D33A31 */
 
     /* Day */
-    --paper: 42 33% 96%;         /* #F7F5F0 page */
-    --paper-2: 40 26% 92%;       /* #EEEAE1 sunken areas, chips */
-    --card: 45 50% 99%;          /* #FDFCF9 raised surfaces */
+    --paper: 0 0% 100%;          /* #FFFFFF page: clean like a listings site */
+    --paper-2: 216 30% 96%;      /* #F2F5F9 alternate sections, chips */
+    --card: 0 0% 100%;           /* #FFFFFF raised surfaces (with a line) */
     --ink: 216 52% 12%;          /* #0F1B2D body text */
     --strong: 216 68% 14%;       /* navy, emphasis + hover text */
-    --line: 38 22% 86%;          /* #E2DDD2 hairlines */
-    --slate-1: 215 20% 38%;      /* #4E5E75 secondary text (AA on paper) */
-    --slate-2: 215 20% 58%;      /* #8193AB tertiary text, icons */
+    --line: 216 22% 88%;         /* #DCE2EA hairlines */
+    --slate-1: 216 18% 36%;      /* #4B586D secondary text (AA on white) */
+    --slate-2: 216 16% 58%;      /* #8492A6 tertiary text, icons */
 
     /* shadcn semantic mapping */
     --background: var(--paper);
@@ -165,10 +182,10 @@
     font-feature-settings: 'kern', 'liga';
   }
   h1, h2, h3, h4, .font-display {
-    font-family: 'Fraunces', Georgia, serif;
-    font-optical-sizing: auto;
-    letter-spacing: -0.015em;
-    font-weight: 500;
+    font-family: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif;
+    letter-spacing: -0.005em;
+    font-weight: 600;
+    line-height: 1.08;
     text-wrap: balance;
   }
   p { text-wrap: pretty; }

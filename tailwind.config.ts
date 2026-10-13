@@ -9,7 +9,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Schibsted Grotesk"', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Fraunces', 'Georgia', 'serif'],
+        display: ['"Barlow Semi Condensed"', '"Arial Narrow"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

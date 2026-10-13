@@ -12,14 +12,16 @@ import { useTheme, type ThemePreference } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 const iconButton =
-  'inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber';
+  'inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber';
+/** Over a photo the controls are white; elsewhere they follow the theme. */
+const tone = (onDark?: boolean) => (onDark ? 'text-chalk hover:bg-chalk/10' : 'text-ink hover:bg-paper-2');
 
-export function LanguageMenu({ className }: { className?: string }) {
+export function LanguageMenu({ className, onDark }: { className?: string; onDark?: boolean }) {
   const { locale, setLocale, t } = useI18n();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn(iconButton, className)} aria-label={t('language.change')}>
-        <Languages className="h-4 w-4 text-slate1" aria-hidden />
+      <DropdownMenuTrigger className={cn(iconButton, tone(onDark), className)} aria-label={t('language.change')}>
+        <Languages className={cn('h-4 w-4', onDark ? 'text-chalk/80' : 'text-slate1')} aria-hidden />
         <span className="uppercase">{locale}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[11rem]">
@@ -38,13 +40,13 @@ export function LanguageMenu({ className }: { className?: string }) {
 const THEME_ICON: Record<ThemePreference, typeof Sun> = { light: Sun, dark: Moon, system: Monitor };
 const THEME_ORDER: ThemePreference[] = ['light', 'dark', 'system'];
 
-export function ThemeMenu({ className }: { className?: string }) {
+export function ThemeMenu({ className, onDark }: { className?: string; onDark?: boolean }) {
   const { preference, theme, setPreference } = useTheme();
   const { t } = useI18n();
   const Current = theme === 'dark' ? Moon : Sun;
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn(iconButton, 'w-10 px-0', className)} aria-label={t('theme.toggle')}>
+      <DropdownMenuTrigger className={cn(iconButton, tone(onDark), 'w-10 px-0', className)} aria-label={t('theme.toggle')}>
         <Current className="h-[18px] w-[18px]" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[10rem]">

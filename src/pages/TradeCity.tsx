@@ -1,39 +1,42 @@
-import { useParams, Navigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ChevronRight, MapPin, Search as SearchIcon } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import { ChevronRight, SearchX } from 'lucide-react';
 import Seo from '@/components/Seo';
-import SafemarqHeader from '@/components/safemarq/SafemarqHeader';
-import SafemarqFooter from '@/components/safemarq/SafemarqFooter';
-import RankedGarageRow from '@/components/safemarq/RankedGarageRow';
-import TradeCityFilterBar from '@/components/safemarq/TradeCityFilterBar';
-import EmptyState from '@/components/EmptyState';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { SearchPanel } from '@/components/search/SearchPanel';
+import { GarageRow } from '@/components/ranking/GarageRow';
 import { useGarages } from '@/hooks/useGarages';
-import { getTrade, TRADE_SLUGS } from '@/lib/trades';
-import { getCity, CITY_SLUGS } from '@/lib/cities';
+import { useI18n } from '@/i18n/I18nProvider';
+import { tradeKey } from '@/i18n/keys';
+import { CITY_SLUGS, cityName, getCity, nearbyCities, rememberCity } from '@/lib/cities';
+import { PHOTOS, photoSrcSet, photoUrl, tradePhoto } from '@/lib/photos';
 import { filterAndRank } from '@/lib/ranking';
-import { staggerParent, fadeUp, inViewProps } from '@/components/safemarq/motion';
+import { TRADE_SLUGS } from '@/lib/trades';
 
 const TradeCity = () => {
-  const { trade: tradeSlug, city: citySlug } = useParams<{ trade: string; city: string }>();
+  const { trade: tradeSlug = '', city: citySlug = '' } = useParams<{ trade: string; city: string }>();
+  const valid = TRADE_SLUGS.includes(tradeSlug) && CITY_SLUGS.includes(citySlug);
+  return valid ? <Ranking tradeSlug={tradeSlug} citySlug={citySlug} /> : <Navigate to="/404" replace />;
+};
 
-  // Strict allow-list to avoid capturing unrelated 2-segment URLs.
-  if (!tradeSlug || !citySlug || !TRADE_SLUGS.includes(tradeSlug) || !CITY_SLUGS.includes(citySlug)) {
-    return <Navigate to="/404" replace />;
-  }
-
-  const trade = getTrade(tradeSlug)!;
-  const city = getCity(citySlug)!;
+function Ranking({ tradeSlug, citySlug }: { tradeSlug: string; citySlug: string }) {
+  const { t, tp, locale } = useI18n();
   const { data: garages, isLoading } = useGarages();
   const ranked = garages ? filterAndRank(garages, tradeSlug, citySlug) : [];
 
-  const title = `Les meilleurs ${trade.labelPlural} à ${city.name}`;
-  const description = `Classement indépendant des ${trade.labelPlural} à ${city.name} basé sur les avis Google vérifiés et le score SafeMarq. ${ranked.length} établissement${ranked.length > 1 ? 's' : ''} comparé${ranked.length > 1 ? 's' : ''}.`;
+  useEffect(() => rememberCity(citySlug), [citySlug]);
+
+  const trade = t(tradeKey(tradeSlug));
+  const city = cityName(citySlug, locale);
+  const photo = tradePhoto(tradeSlug) ?? PHOTOS.hero;
+  const region = getCity(citySlug)?.region;
 
   const jsonLd = ranked.length
     ? {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: title,
+        name: t('ranking.title', { trade, city }),
         itemListElement: ranked.slice(0, 20).map((g) => ({
           '@type': 'ListItem',
           position: g.rank,
@@ -45,119 +48,111 @@ const TradeCity = () => {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <Seo title={`${title} — SafeMarq`} description={description} jsonLd={jsonLd} />
-      <SafemarqHeader />
+      <Seo title={t('ranking.metaTitle', { trade, city })} description={t('ranking.metaDescription', { trade, city })} jsonLd={jsonLd} />
+      <SiteHeader overlay />
 
       <main id="contenu">
-        <section className="container-editorial pt-10 md:pt-14 pb-8">
-          {/* Breadcrumb */}
-          <nav aria-label="Fil d'ariane" className="text-xs text-slate1 flex items-center gap-1.5 flex-wrap">
-            <Link to="/" className="hover:text-ink">Accueil</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span>{trade.label}</span>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-ink font-medium">{city.name}</span>
-          </nav>
-
-          <motion.p variants={fadeUp} initial="hidden" animate="show" className="eyebrow mt-6">
-            Classement indépendant · {city.province}
-          </motion.p>
-
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            transition={{ delay: 0.05 }}
-            className="font-display text-ink mt-3 leading-[1.05]"
-            style={{ fontSize: 'clamp(2rem, 4.6vw, 3.6rem)', fontWeight: 500 }}
-          >
-            Les meilleurs <em className="italic text-strong">{trade.labelPlural}</em><br /> à {city.name}.
-          </motion.h1>
-
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            transition={{ delay: 0.1 }}
-            className="mt-5 text-lg text-slate1 max-w-2xl leading-relaxed"
-          >
-            Classés selon les avis Google vérifiés et le score SafeMarq.{' '}
-            <span className="text-ink font-semibold num">{ranked.length}</span> établissement{ranked.length > 1 ? 's' : ''} comparé{ranked.length > 1 ? 's' : ''}.
-          </motion.p>
-
-          <div className="mt-8">
-            <TradeCityFilterBar trade={tradeSlug} city={citySlug} />
+        <section className="relative isolate overflow-hidden bg-navy-900 text-chalk">
+          <img
+            src={photoUrl(photo, 1920, 640)}
+            srcSet={photoSrcSet(photo, [640, 1280, 1920, 2560], 3)}
+            sizes="100vw"
+            alt=""
+            decoding="async"
+            className="absolute inset-0 -z-20 h-full w-full object-cover"
+          />
+          <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,hsl(var(--navy-900)/0.94)_0%,hsl(var(--navy-900)/0.78)_45%,hsl(var(--navy-900)/0.45)_100%)]" />
+          <div className="container-editorial pb-24 pt-28 md:pb-28 md:pt-36">
+            <nav aria-label={t('ranking.breadcrumbLabel')} className="flex flex-wrap items-center gap-1.5 text-sm text-chalk/75">
+              <Link to="/" className="hover:text-chalk hover:underline">
+                {t('nav.home')}
+              </Link>
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <span>{trade}</span>
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <span className="font-semibold text-chalk" aria-current="page">
+                {city}
+              </span>
+            </nav>
+            <h1 className="mt-4 max-w-[18ch] text-[40px] font-bold leading-[1.02] text-chalk md:text-[64px]">{t('ranking.title', { trade, city })}</h1>
+            <p className="mt-3 text-lg text-chalk/80">
+              {t('ranking.subtitle')}
+              {!isLoading && ranked.length > 0 && <> {tp('ranking.count', ranked.length)}.</>}
+            </p>
           </div>
         </section>
 
-        {/* Ranked list */}
-        <section className="container-editorial pb-16">
+        <div className="container-editorial relative z-10 -mt-14 md:-mt-16">
+          <SearchPanel key={`${tradeSlug}-${citySlug}`} variant="compact" initialTrade={tradeSlug} initialCity={citySlug} className="max-w-4xl" />
+        </div>
+
+        <section aria-live="polite" className="container-editorial py-10 md:py-14">
           {isLoading ? (
-            <div className="py-20 text-center text-slate1 text-sm">Chargement du classement…</div>
+            <ul className="space-y-3" aria-label={t('ranking.loading')}>
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="h-32 animate-pulse rounded-2xl bg-paper-2" />
+              ))}
+            </ul>
           ) : ranked.length === 0 ? (
-            <div className="bg-card border hairline rounded-2xl">
-              <EmptyState
-                icon={SearchIcon}
-                title={`Aucun ${trade.label.toLowerCase()} noté à ${city.name} pour l'instant`}
-                description="Les fiches vérifiées arrivent. Essayez une autre ville ou un autre métier ci-dessus."
-              />
+            <div className="rounded-2xl border border-line bg-card p-6 md:p-10">
+              <SearchX className="h-8 w-8 text-slate1" aria-hidden />
+              <h2 className="mt-4 max-w-[26ch] text-[28px] font-semibold text-strong">{t('ranking.emptyTitle', { trade, city })}</h2>
+              <p className="mt-2 max-w-xl text-[16px] text-slate1">{t('ranking.emptyBody')}</p>
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {nearbyCities(citySlug, 4).map((c) => (
+                  <li key={c.slug}>
+                    <Link
+                      to={`/${tradeSlug}/${c.slug}`}
+                      className="inline-flex min-h-[40px] items-center rounded-full border border-line px-4 text-[15px] font-semibold text-ink hover:border-ink/40"
+                    >
+                      {t('search.popularItem', { trade, city: cityName(c.slug, locale) })}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/pro/connexion" className="mt-6 inline-flex font-semibold text-strong underline underline-offset-4">
+                {t('ranking.emptyPro', { city })}
+              </Link>
             </div>
           ) : (
-            <motion.div
-              variants={staggerParent}
-              {...inViewProps}
-              className="flex flex-col gap-4 md:gap-5"
-            >
+            <ol className="space-y-4">
               {ranked.map((g) => (
-                <RankedGarageRow key={g.id} garage={g} citySlug={citySlug} />
+                <li key={g.id}>
+                  <GarageRow garage={g} cityLabel={city} />
+                </li>
               ))}
-            </motion.div>
+            </ol>
           )}
         </section>
 
-        {/* Editorial SEO block */}
-        <section className="border-t hairline bg-white/60">
-          <div className="container-editorial py-14 md:py-20 grid md:grid-cols-[1.2fr_1fr] gap-12">
+        <section className="border-t border-line bg-paper-2">
+          <div className="container-editorial grid gap-12 py-14 md:grid-cols-2 md:py-20">
             <div>
-              <p className="eyebrow">Guide SafeMarq</p>
-              <h2 className="font-display text-3xl md:text-4xl text-ink mt-3 leading-tight" style={{ fontWeight: 500 }}>
-                Comment choisir un{trade.label.toLowerCase().match(/^[aeiouéèêh]/) ? "n" : ""} {trade.label.toLowerCase()} à {city.name}
-              </h2>
-              <div className="prose prose-sm mt-6 text-slate1 leading-relaxed space-y-4 max-w-xl">
-                <p>
-                  À {city.name}, la qualité d'un{trade.label.toLowerCase().match(/^[aeiouéèêh]/) ? "" : ""} bon prestataire se lit d'abord dans le volume et la constance de ses avis. Un score de 4,3/5 sur 400 avis pèse davantage qu'un 4,9/5 sur 12 avis.
+              <h2 className="text-[30px] font-bold text-strong md:text-4xl">{t('ranking.guideTitle', { city })}</h2>
+              <ul className="mt-6 space-y-4">
+                {(['guide1', 'guide2', 'guide3'] as const).map((k) => (
+                  <li key={k} className="flex gap-3 text-[16px] leading-relaxed text-ink">
+                    <span aria-hidden className="mt-[9px] h-2 w-2 shrink-0 bg-amber" />
+                    {t(`ranking.${k}`)}
+                  </li>
+                ))}
+              </ul>
+              {region && (
+                <p className="mt-6 text-sm text-slate1">
+                  {city}, {t(`home.regions.${region}`)}
                 </p>
-                <p>
-                  SafeMarq combine la note moyenne Google (60%) et le volume d'avis (40%, échelle logarithmique) pour éviter les biais des jeunes fiches sur-notées. Aucun garage ne peut payer pour améliorer son rang.
-                </p>
-                <p>
-                  Vérifiez toujours que le devis détaille la main-d'œuvre, les pièces et la TVA. Un professionnel sérieux à {city.name} vous remet un ordre de réparation écrit avant toute intervention.
-                </p>
-              </div>
+              )}
             </div>
-
             <div>
-              <p className="eyebrow">FAQ</p>
-              <div className="mt-6 space-y-5">
-                {[
-                  {
-                    q: `Comment sont classés les ${trade.labelPlural} à ${city.name} ?`,
-                    a: `Par score SafeMarq décroissant : 60% de la note moyenne, 40% du volume d'avis (log). Aucun paiement possible.`,
-                  },
-                  {
-                    q: `Les avis sont-ils vérifiés ?`,
-                    a: `Nous agrégeons uniquement les avis Google publics des fiches concernées à ${city.name}.`,
-                  },
-                  {
-                    q: `Puis-je demander un devis directement ?`,
-                    a: `Oui — le bouton "Demander un devis" transmet votre demande au garage choisi, sans intermédiaire.`,
-                  },
-                ].map((f) => (
-                  <details key={f.q} className="group border hairline rounded-lg bg-card p-4 open:shadow-sm">
-                    <summary className="cursor-pointer text-sm font-semibold text-ink flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-amber" /> {f.q}
+              <h2 className="text-[30px] font-bold text-strong md:text-4xl">{t('ranking.faqTitle')}</h2>
+              <div className="mt-6 divide-y divide-line border-y border-line">
+                {(['1', '2', '3'] as const).map((n) => (
+                  <details key={n} className="group py-4">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-semibold text-ink">
+                      {t(`ranking.faq${n}q`)}
+                      <ChevronRight className="h-5 w-5 shrink-0 text-slate1 transition-transform group-open:rotate-90" aria-hidden />
                     </summary>
-                    <p className="text-sm text-slate1 mt-3 leading-relaxed">{f.a}</p>
+                    <p className="mt-3 text-[16px] leading-relaxed text-slate1">{t(`ranking.faq${n}a`)}</p>
                   </details>
                 ))}
               </div>
@@ -166,9 +161,9 @@ const TradeCity = () => {
         </section>
       </main>
 
-      <SafemarqFooter />
+      <SiteFooter />
     </div>
   );
-};
+}
 
 export default TradeCity;

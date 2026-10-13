@@ -13,7 +13,7 @@ interface ThemeContextValue {
 }
 
 const STORAGE_KEY = 'safemarq-theme';
-const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#F7F5F0', dark: '#0A101B' };
+const THEME_COLORS: Record<ResolvedTheme, string> = { light: '#FFFFFF', dark: '#0A101B' };
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ExternalLink, Lock, MapPin, MessageSquare, Plus, Star } from 'lucide-react';
 import { toast } from 'sonner';
-import ScoreSeal from '@/components/safemarq/ScoreSeal';
+import { ScoreBadge } from '@/components/site/ScoreBadge';
 import { PreferenceSegments } from '@/components/site/Preferences';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -97,7 +97,7 @@ export function OverviewSection({ pro, workspace }: { pro: ProAccount; workspace
             return (
               <li key={garage.id} className="rounded-2xl border border-line bg-card p-5">
                 <div className="flex items-start gap-4">
-                  <ScoreSeal score={score} size={76} compact />
+                  <ScoreBadge score={score} size="md" showGrade={false} />
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-semibold text-teal">{t('pro.status.listingApproved')}</p>
                     <h3 className="mt-0.5 truncate text-xl text-strong">{garage.name}</h3>
@@ -110,7 +110,7 @@ export function OverviewSection({ pro, workspace }: { pro: ProAccount; workspace
                 <dl className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4">
                   <div>
                     <dt className="text-[13px] text-slate1">{t('pro.dashboard.googleRating')}</dt>
-                    <dd className="mt-0.5 flex items-center gap-1 font-display text-xl text-ink num">
+                    <dd className="mt-0.5 flex items-center gap-1 font-display text-xl text-ink">
                       {formatNumber(garage.rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                       <Star className="h-4 w-4 fill-amber text-amber" aria-hidden />
                     </dd>

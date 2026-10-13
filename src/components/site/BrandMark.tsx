@@ -18,12 +18,12 @@ export function BrandMark({ size = 36, className }: { size?: number; className?:
   );
 }
 
-export function BrandLink({ to = '/', className }: { to?: string; className?: string }) {
+export function BrandLink({ to = '/', className, onDark }: { to?: string; className?: string; onDark?: boolean }) {
   const { t } = useI18n();
   return (
     <Link to={to} className={cn('flex shrink-0 items-center gap-2.5 rounded-md', className)} aria-label={`SafeMarq, ${t('nav.home')}`}>
       <BrandMark />
-      <span className="font-display text-[21px] leading-none text-strong" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>
+      <span className={cn('font-display text-[23px] font-bold leading-none', onDark ? 'text-chalk' : 'text-strong')}>
         SafeMarq
       </span>
     </Link>
