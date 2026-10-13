@@ -27,7 +27,7 @@ export function HomeHero({ garageCount }: { garageCount?: number }) {
   return (
     <section className="relative isolate overflow-hidden bg-navy-900">
       <picture>
-        <source media="(max-width: 767px)" srcSet={photoSrcSet(photo, [390, 780, 1170], 390 / 760)} sizes="100vw" />
+        <source media="(max-width: 767px)" srcSet={photoSrcSet(photo, [390, 780, 1170], 390 / 540)} sizes="100vw" />
         <img
           src={photoUrl(photo, 1920)}
           srcSet={[960, 1440, 1920, 2560].map((w) => `${photoUrl(photo, w)} ${w}w`).join(', ')}
@@ -35,12 +35,13 @@ export function HomeHero({ garageCount }: { garageCount?: number }) {
           alt={t('home.photoAlt.hero')}
           decoding="async"
           {...HIGH_PRIORITY}
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_55%]"
+          className="absolute inset-x-0 top-0 -z-20 h-[64%] w-full object-cover object-[70%_55%] md:h-full"
         />
       </picture>
-      {/* Phones: dark at the bottom where the search sits. Desktop: dark on the left for the headline. */}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,hsl(var(--navy-900)/0.55)_0%,hsl(var(--navy-900)/0.25)_30%,hsl(var(--navy-900)/0.92)_68%,hsl(var(--navy-900))_100%)] md:hidden" />
-      <div aria-hidden className="absolute inset-0 -z-10 hidden bg-[linear-gradient(90deg,hsl(var(--navy-900)/0.94)_0%,hsl(var(--navy-900)/0.8)_34%,hsl(var(--navy-900)/0.28)_68%,hsl(var(--navy-900)/0.12)_100%),linear-gradient(0deg,hsl(var(--navy-900)/0.75)_0%,transparent_45%)] md:block" />
+      {/* Phones: photo in the top part, fading into navy behind the headline and search.
+          Desktop: dark on the left for the headline, and along the top for the header. */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,hsl(var(--navy-900)/0.6)_0%,hsl(var(--navy-900)/0.1)_20%,hsl(var(--navy-900)/0.2)_38%,hsl(var(--navy-900)/0.88)_54%,hsl(var(--navy-900))_64%)] md:hidden" />
+      <div aria-hidden className="absolute inset-0 -z-10 hidden bg-[linear-gradient(180deg,hsl(var(--navy-900)/0.6)_0%,transparent_20%),linear-gradient(90deg,hsl(var(--navy-900)/0.94)_0%,hsl(var(--navy-900)/0.8)_34%,hsl(var(--navy-900)/0.28)_68%,hsl(var(--navy-900)/0.12)_100%),linear-gradient(0deg,hsl(var(--navy-900)/0.75)_0%,transparent_45%)] md:block" />
 
       <div className="container-editorial flex min-h-[100svh] flex-col justify-end pb-8 pt-28 md:min-h-[min(94svh,900px)] md:pb-14 md:pt-36">
         <h1 className="max-w-[14ch] text-[44px] font-bold leading-[0.98] text-chalk sm:text-[56px] md:text-[76px] lg:text-[84px]">
