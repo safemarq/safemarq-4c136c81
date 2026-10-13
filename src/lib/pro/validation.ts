@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { MessageKey } from '@/i18n/types';
-import { TRADE_SLUGS } from '@/lib/trades';
+import { TRADES, VEHICLES, VEHICLE_TRADES, type TradeSlug, type VehicleSlug } from '@/lib/taxonomy';
 import { LOCALES } from '@/i18n/config';
 
 /*
@@ -123,7 +123,8 @@ export const contactSchema = z.object({
   contact_locale: z.enum(LOCALES),
 });
 
-const tradeSlug = z.string().refine((s) => (TRADE_SLUGS as string[]).includes(s));
+const tradeSlug = z.enum(TRADES as [TradeSlug, ...TradeSlug[]]);
+const vehicleSlug = z.enum(VEHICLES);
 
 export const newGarageSchema = z.object({
   name: text(2, 160),
@@ -138,7 +139,12 @@ export const newGarageSchema = z.object({
     .refine((v) => v === '' || /^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(v), msg('validation.url'))
     .transform((v) => (v === '' ? '' : normalizeWebsite(v))),
   brand: z.string().trim().max(80, msg('validation.tooLong')),
+  vehicles: z.array(vehicleSlug).min(1, msg('validation.vehiclesMin')),
   trades: z.array(tradeSlug).min(1, msg('validation.tradesMin')),
+}).superRefine((v, ctx) => {
+  // Same rule as the database: every trade must exist for one of the chosen vehicles.
+  const offered = new Set<TradeSlug>(v.vehicles.flatMap((veh: VehicleSlug) => VEHICLE_TRADES[veh]));
+  if (v.trades.some((t) => !offered.has(t))) ctx.addIssue({ code: 'custom', path: ['trades'], ...msg('validation.tradesMin') });
 });
 
 export const passwordSchema = z

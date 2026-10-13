@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      be_postal_codes: {
+        Row: {
+          location: unknown
+          name: string
+          postal_code: string
+          region: string
+        }
+        Insert: {
+          location: unknown
+          name: string
+          postal_code: string
+          region: string
+        }
+        Update: {
+          location?: unknown
+          name?: string
+          postal_code?: string
+          region?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -203,6 +224,35 @@ export type Database = {
           },
         ]
       }
+      garage_services: {
+        Row: {
+          created_at: string
+          garage_id: string
+          trade: string
+          vehicle: string
+        }
+        Insert: {
+          created_at?: string
+          garage_id: string
+          trade: string
+          vehicle: string
+        }
+        Update: {
+          created_at?: string
+          garage_id?: string
+          trade?: string
+          vehicle?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garage_services_garage_id_fkey"
+            columns: ["garage_id"]
+            isOneToOne: false
+            referencedRelation: "garages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       garage_submissions: {
         Row: {
           brand: string | null
@@ -219,6 +269,7 @@ export type Database = {
           street: string
           trades: string[]
           user_id: string
+          vehicles: string[]
           website: string | null
         }
         Insert: {
@@ -236,6 +287,7 @@ export type Database = {
           street: string
           trades: string[]
           user_id: string
+          vehicles?: string[]
           website?: string | null
         }
         Update: {
@@ -253,6 +305,7 @@ export type Database = {
           street?: string
           trades?: string[]
           user_id?: string
+          vehicles?: string[]
           website?: string | null
         }
         Relationships: [
@@ -270,84 +323,126 @@ export type Database = {
           address: string
           badges: Json
           brand: string | null
+          certifications: Json
           coords: Json
+          cover_image_url: string | null
           created_at: string
           description: string | null
+          faq: Json
           hours: Json
           id: string
           images: Json
           insight_icon: string | null
           key_insight: string | null
+          locality: string | null
+          location: unknown | null
+          location_precise: boolean
+          logo_url: string | null
+          long_description: string | null
           name: string
           phone: string | null
+          postal_code: string | null
           price_level: string
+          promo_banner: Json | null
           quality_scores: Json
           quote: string | null
           rating: number
           reviews_count: number
+          safemarq_score: number | null
+          services_detail: Json
           slug: string
           specialty: string | null
+          team: Json
           tier: Database["public"]["Enums"]["garage_tier"]
           type: string
           updated_at: string
           vehicle_types: Json
           verified: boolean
+          video_url: string | null
           website: string | null
         }
         Insert: {
           address: string
           badges?: Json
           brand?: string | null
+          certifications?: Json
           coords?: Json
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          faq?: Json
           hours?: Json
           id?: string
           images?: Json
           insight_icon?: string | null
           key_insight?: string | null
+          locality?: string | null
+          location?: unknown | null
+          location_precise?: boolean
+          logo_url?: string | null
+          long_description?: string | null
           name: string
           phone?: string | null
+          postal_code?: string | null
           price_level: string
+          promo_banner?: Json | null
           quality_scores?: Json
           quote?: string | null
           rating?: number
           reviews_count?: number
+          safemarq_score?: never
+          services_detail?: Json
           slug: string
           specialty?: string | null
+          team?: Json
           tier?: Database["public"]["Enums"]["garage_tier"]
           type: string
           updated_at?: string
           vehicle_types?: Json
           verified?: boolean
+          video_url?: string | null
           website?: string | null
         }
         Update: {
           address?: string
           badges?: Json
           brand?: string | null
+          certifications?: Json
           coords?: Json
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          faq?: Json
           hours?: Json
           id?: string
           images?: Json
           insight_icon?: string | null
           key_insight?: string | null
+          locality?: string | null
+          location?: unknown | null
+          location_precise?: boolean
+          logo_url?: string | null
+          long_description?: string | null
           name?: string
           phone?: string | null
+          postal_code?: string | null
           price_level?: string
+          promo_banner?: Json | null
           quality_scores?: Json
           quote?: string | null
           rating?: number
           reviews_count?: number
+          safemarq_score?: never
+          services_detail?: Json
           slug?: string
           specialty?: string | null
+          team?: Json
           tier?: Database["public"]["Enums"]["garage_tier"]
           type?: string
           updated_at?: string
           vehicle_types?: Json
           verified?: boolean
+          video_url?: string | null
           website?: string | null
         }
         Relationships: []
@@ -679,6 +774,27 @@ export type Database = {
         }
         Relationships: []
       }
+      trades: {
+        Row: {
+          group_id: string
+          label_fr: string
+          position: number
+          slug: string
+        }
+        Insert: {
+          group_id: string
+          label_fr: string
+          position: number
+          slug: string
+        }
+        Update: {
+          group_id?: string
+          label_fr?: string
+          position?: number
+          slug?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -736,6 +852,36 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_categories: {
+        Row: {
+          position: number
+          slug: string
+        }
+        Insert: {
+          position: number
+          slug: string
+        }
+        Update: {
+          position?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      vehicle_trades: {
+        Row: {
+          trade: string
+          vehicle: string
+        }
+        Insert: {
+          trade: string
+          vehicle: string
+        }
+        Update: {
+          trade?: string
+          vehicle?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -779,6 +925,37 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_garages: {
+        Args: {
+          p_lat: number
+          p_limit?: number
+          p_lng: number
+          p_offset?: number
+          p_radius_km?: number
+          p_sort?: string
+          p_trade?: string | null
+          p_vehicle?: string
+        }
+        Returns: {
+          address: string
+          brand: string | null
+          cover_image_url: string | null
+          distance_km: number
+          id: string
+          locality: string | null
+          logo_url: string | null
+          name: string
+          postal_code: string | null
+          rating: number
+          reviews_count: number
+          safemarq_score: number
+          slug: string
+          tier: Database["public"]["Enums"]["garage_tier"]
+          total_count: number
+          type: string
+          verified: boolean
+        }[]
+      }
       search_claimable_garages: {
         Args: { q: string }
         Returns: {
@@ -789,6 +966,7 @@ export type Database = {
           slug: string
         }[]
       }
+      trade_label_fr: { Args: { slug: string }; Returns: string }
       submit_pro_onboarding: {
         Args: {
           p_account?: Json | null

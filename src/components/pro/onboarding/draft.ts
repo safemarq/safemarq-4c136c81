@@ -18,7 +18,7 @@ export interface OnboardingDraft {
 export const emptyDraft = (): OnboardingDraft => ({
   company: {},
   contact: {},
-  establishment: { mode: 'existing', existing: null, newGarage: { trades: [] } },
+  establishment: { mode: 'existing', existing: null, newGarage: { vehicles: ['voiture'], trades: [] } },
   step: 0,
 });
 

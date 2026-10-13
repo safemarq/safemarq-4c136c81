@@ -8,7 +8,10 @@ import { BrandLink } from './BrandMark';
 import { LanguageMenu, PreferenceSegments, ThemeMenu } from './Preferences';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useAuth } from '@/contexts/AuthContext';
-import { tradeHref } from '@/lib/links';
+import { tradeHref, vehicleHref } from '@/lib/links';
+import { DEFAULT_VEHICLE, VEHICLES, type VehicleSlug } from '@/lib/taxonomy';
+import { vehicleIcon } from '@/lib/tradeMeta';
+import { vehicleKey } from '@/i18n/keys';
 import { PHOTOS, photoSrcSet, photoUrl } from '@/lib/photos';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +27,7 @@ export default function SiteHeader({ overlay = false }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [tradesOpen, setTradesOpen] = useState(false);
+  const [menuVehicle, setMenuVehicle] = useState<VehicleSlug>(DEFAULT_VEHICLE);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -69,21 +73,31 @@ export default function SiteHeader({ overlay = false }: Props) {
               {t('nav.allTrades')}
               <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" aria-hidden />
             </PopoverTrigger>
-            <PopoverContent align="start" sideOffset={14} className="w-[min(64rem,calc(100vw-4rem))] rounded-2xl border-line bg-card p-0 shadow-lg">
-              <div className="grid lg:grid-cols-[1fr_17rem]">
-                <TradeList
-                  className="p-6"
-                  renderItem={(slug, content, cls) => (
-                    <Link to={tradeHref(slug)} className={cls} onClick={() => setTradesOpen(false)}>
-                      {content}
-                    </Link>
-                  )}
-                />
+            <PopoverContent
+              align="start"
+              sideOffset={14}
+              collisionPadding={24}
+              className="w-[min(76rem,calc(100vw-3rem))] rounded-2xl border-line bg-card p-0 shadow-lg"
+            >
+              <div className="grid lg:grid-cols-[13.5rem_1fr_16rem]">
+                <VehicleRail value={menuVehicle} onChange={setMenuVehicle} onNavigate={() => setTradesOpen(false)} />
+                <div className="max-h-[min(78vh,42rem)] overflow-y-auto p-5 pb-1">
+                  <TradeList
+                    key={menuVehicle}
+                    vehicle={menuVehicle}
+                    dense
+                    renderItem={(slug, content, cls) => (
+                      <Link to={tradeHref(slug, menuVehicle)} className={cls} onClick={() => setTradesOpen(false)}>
+                        {content}
+                      </Link>
+                    )}
+                  />
+                </div>
                 <MenuFeature onNavigate={() => setTradesOpen(false)} />
               </div>
             </PopoverContent>
           </Popover>
-          <Link to={tradeHref('mecanique')} className={navItem}>
+          <Link to={vehicleHref('voiture')} className={navItem}>
             {t('nav.garages')}
           </Link>
           <Link to={tradeHref('carrosserie')} className={navItem}>
@@ -137,7 +151,7 @@ export default function SiteHeader({ overlay = false }: Props) {
               </div>
               <nav className="flex flex-col px-5 pt-3" aria-label={t('nav.menu')}>
                 {[
-                  { to: tradeHref('mecanique'), label: t('nav.garages') },
+                  { to: vehicleHref('voiture'), label: t('nav.garages') },
                   { to: tradeHref('carrosserie'), label: t('nav.bodyshops') },
                   { to: '/about', label: t('nav.method') },
                   { to: accountHref, label: user ? t('nav.account') : t('nav.signIn') },
@@ -148,12 +162,36 @@ export default function SiteHeader({ overlay = false }: Props) {
                 ))}
               </nav>
               <div className="px-3 pt-6">
-                <p className="mb-1 px-2 text-sm font-semibold text-slate1">{t('nav.allTrades')}</p>
+                <p className="mb-2 px-2 text-sm font-semibold text-slate1">{t('nav.allTrades')}</p>
+                <div role="radiogroup" aria-label={t('search.vehicleLabel')} className="scrollbar-hide flex gap-1.5 overflow-x-auto px-2 pb-3">
+                  {VEHICLES.map((v) => {
+                    const Icon = vehicleIcon(v);
+                    const active = v === menuVehicle;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setMenuVehicle(v)}
+                        className={cn(
+                          'inline-flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-full border px-3 text-[14px] font-semibold transition-colors',
+                          active ? 'border-strong bg-strong text-paper' : 'border-line bg-card text-slate1',
+                        )}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden />
+                        {t(vehicleKey(v, 'short'))}
+                      </button>
+                    );
+                  })}
+                </div>
                 <TradeList
+                  key={menuVehicle}
+                  vehicle={menuVehicle}
                   columns={1}
-                  className="gap-y-4"
+                  dense
                   renderItem={(slug, content, cls) => (
-                    <Link to={tradeHref(slug)} className={cls} onClick={() => setOpen(false)}>
+                    <Link to={tradeHref(slug, menuVehicle)} className={cls} onClick={() => setOpen(false)}>
                       {content}
                     </Link>
                   )}
@@ -170,6 +208,37 @@ export default function SiteHeader({ overlay = false }: Props) {
         </div>
       </div>
     </header>
+  );
+}
+
+/** Left column of the trades menu: one entry per vehicle, hover or focus to switch. */
+function VehicleRail({ value, onChange, onNavigate }: { value: VehicleSlug; onChange: (v: VehicleSlug) => void; onNavigate: () => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="border-r border-line bg-paper-2/60 p-3" role="tablist" aria-orientation="vertical" aria-label={t('search.vehicleLabel')}>
+      {VEHICLES.map((v) => {
+        const Icon = vehicleIcon(v);
+        const active = v === value;
+        return (
+          <Link
+            key={v}
+            to={vehicleHref(v)}
+            role="tab"
+            aria-selected={active}
+            onMouseEnter={() => onChange(v)}
+            onFocus={() => onChange(v)}
+            onClick={onNavigate}
+            className={cn(
+              'flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-[15px] font-semibold transition-colors',
+              active ? 'bg-card text-strong shadow-sm' : 'text-slate1 hover:text-ink',
+            )}
+          >
+            <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.1 : 1.8} aria-hidden />
+            {t(vehicleKey(v, 'short'))}
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 

@@ -5,10 +5,11 @@ import { Loader2, MapPin, Plus, Search, Store } from 'lucide-react';
 import { Field } from '@/components/pro/Field';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/i18n/I18nProvider';
-import { tradeKey } from '@/i18n/keys';
+import { tradeKey, vehicleKey } from '@/i18n/keys';
 import { useClaimableGarageSearch, type ClaimableGarage } from '@/hooks/useProAccount';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { TRADES } from '@/lib/trades';
+import { TRADES, TRADE_GROUPS, TRADE_GROUP, VEHICLES, VEHICLE_TRADES, type TradeSlug, type VehicleSlug } from '@/lib/taxonomy';
+import { tradeIcon, vehicleIcon } from '@/lib/tradeMeta';
 import { newGarageSchema, type ContactInput, type NewGarageInput, type NewGarageValues } from '@/lib/pro/validation';
 import { cn } from '@/lib/utils';
 import type { EstablishmentMode, OnboardingDraft } from './draft';
@@ -196,6 +197,7 @@ function NewGarageForm({
       phone: initial.phone ?? '',
       website: initial.website ?? '',
       brand: initial.brand ?? '',
+      vehicles: initial.vehicles?.length ? initial.vehicles : ['voiture'],
       trades: initial.trades ?? [],
     },
     mode: 'onTouched',
@@ -250,34 +252,96 @@ function NewGarageForm({
         )}
 
         <fieldset>
+          <legend className="field-label">{t('pro.onboarding.establishment.vehicles')}</legend>
+          <p className="field-hint mb-3 mt-0">{t('pro.onboarding.establishment.vehiclesHint')}</p>
+          <Controller
+            control={form.control}
+            name="vehicles"
+            render={({ field }) => {
+              const value: VehicleSlug[] = field.value ?? [];
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {VEHICLES.map((v) => {
+                    const on = value.includes(v);
+                    const Icon = vehicleIcon(v);
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => {
+                          const vehicles = on ? value.filter((x) => x !== v) : [...value, v];
+                          // Drop trades none of the remaining vehicles has.
+                          const offered = new Set<TradeSlug>(vehicles.flatMap((x) => VEHICLE_TRADES[x]));
+                          const trades = (form.getValues('trades') ?? []).filter((tr) => offered.has(tr));
+                          field.onChange(vehicles);
+                          form.setValue('trades', trades);
+                          onChange({ ...form.getValues(), vehicles, trades });
+                        }}
+                        className={cn(
+                          'inline-flex min-h-[44px] items-center gap-2 rounded-full border px-4 text-[15px] font-semibold transition-colors',
+                          on ? 'border-strong bg-strong text-paper' : 'border-line bg-card text-ink hover:border-ink/30',
+                        )}
+                      >
+                        <Icon className="h-[18px] w-[18px]" aria-hidden />
+                        {t(vehicleKey(v, 'label'))}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            }}
+          />
+          {errors.vehicles?.message && (
+            <p className="field-error" role="alert">
+              {t('validation.vehiclesMin')}
+            </p>
+          )}
+        </fieldset>
+
+        <fieldset>
           <legend className="field-label">{t('pro.onboarding.establishment.trades')}</legend>
           <p className="field-hint mb-3 mt-0">{t('pro.onboarding.establishment.tradesHint')}</p>
           <Controller
             control={form.control}
             name="trades"
             render={({ field }) => {
-              const value = field.value ?? [];
+              const value: TradeSlug[] = field.value ?? [];
+              const offered = new Set<TradeSlug>((form.watch('vehicles') ?? []).flatMap((x) => VEHICLE_TRADES[x]));
               return (
-                <div className="flex flex-wrap gap-2">
-                  {TRADES.map((tr) => {
-                    const on = value.includes(tr.slug);
+                <div className="space-y-4">
+                  {TRADE_GROUPS.map((g) => {
+                    const list = TRADES.filter((tr) => TRADE_GROUP[tr] === g && offered.has(tr));
+                    if (list.length === 0) return null;
                     return (
-                      <button
-                        key={tr.slug}
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => {
-                          const next = on ? value.filter((s) => s !== tr.slug) : [...value, tr.slug];
-                          field.onChange(next);
-                          onChange({ ...form.getValues(), trades: next });
-                        }}
-                        className={cn(
-                          'min-h-[40px] rounded-full border px-3.5 text-sm font-medium transition-colors',
-                          on ? 'border-strong bg-strong text-paper' : 'border-line bg-card text-ink hover:border-ink/30',
-                        )}
-                      >
-                        {t(tradeKey(tr.slug))}
-                      </button>
+                      <div key={g}>
+                        <p className="mb-2 text-[13px] font-semibold text-slate1">{t(`tradeGroups.${g}`)}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {list.map((tr) => {
+                            const on = value.includes(tr);
+                            const Icon = tradeIcon(tr);
+                            return (
+                              <button
+                                key={tr}
+                                type="button"
+                                aria-pressed={on}
+                                onClick={() => {
+                                  const next = on ? value.filter((s) => s !== tr) : [...value, tr];
+                                  field.onChange(next);
+                                  onChange({ ...form.getValues(), trades: next });
+                                }}
+                                className={cn(
+                                  'inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors',
+                                  on ? 'border-strong bg-strong text-paper' : 'border-line bg-card text-ink hover:border-ink/30',
+                                )}
+                              >
+                                <Icon className="h-4 w-4" aria-hidden />
+                                {t(tradeKey(tr))}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>

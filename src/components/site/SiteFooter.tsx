@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { BrandMark } from './BrandMark';
 import { useI18n } from '@/i18n/I18nProvider';
 import { cityName } from '@/lib/cities';
+import { rankingPath, vehicleHref } from '@/lib/links';
+import { VEHICLES } from '@/lib/taxonomy';
+import { vehicleKey } from '@/i18n/keys';
 import { cn } from '@/lib/utils';
 
 const FEATURED_CITIES = ['bruxelles', 'anvers', 'liege', 'namur', 'gand'] as const;
@@ -14,7 +17,14 @@ export default function SiteFooter({ className }: { className?: string }) {
   const columns: { title: string; links: { label: string; to: string }[] }[] = [
     {
       title: t('footer.explore'),
-      links: FEATURED_CITIES.map((c) => ({ label: t('footer.cityLink', { city: cityName(c, locale) }), to: `/mecanique/${c}` })),
+      links: FEATURED_CITIES.map((c) => ({
+        label: t('footer.cityLink', { city: cityName(c, locale) }),
+        to: rankingPath({ vehicle: 'voiture', trade: null, city: c }),
+      })),
+    },
+    {
+      title: t('footer.vehicles'),
+      links: VEHICLES.filter((v) => v !== 'voiture').map((v) => ({ label: t(vehicleKey(v, 'label')), to: vehicleHref(v) })),
     },
     {
       title: t('footer.trust'),
@@ -45,7 +55,7 @@ export default function SiteFooter({ className }: { className?: string }) {
   return (
     <footer className={cn('bg-navy-900 text-chalk', className)}>
       <div className="container-editorial pb-28 pt-14 md:pb-12">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
+        <div className="grid gap-12 lg:grid-cols-[17rem_1fr] xl:grid-cols-[20rem_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
               <BrandMark className="ring-1 ring-inset ring-chalk/20" />
@@ -55,7 +65,7 @@ export default function SiteFooter({ className }: { className?: string }) {
             </div>
             <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-chalk/70">{t('footer.tagline')}</p>
           </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5">
             {columns.map((col) => (
               <div key={col.title}>
                 <h2 className="font-sans text-sm font-semibold text-amber">{col.title}</h2>
@@ -72,7 +82,10 @@ export default function SiteFooter({ className }: { className?: string }) {
             ))}
           </div>
         </div>
-        <p className="mt-12 border-t border-chalk/10 pt-6 text-sm text-chalk/60">{t('footer.rights', { year })}</p>
+        <div className="mt-12 flex flex-col gap-2 border-t border-chalk/10 pt-6 text-sm text-chalk/60 md:flex-row md:justify-between">
+          <p>{t('footer.rights', { year })}</p>
+          <p>{t('footer.dataCredit')}</p>
+        </div>
       </div>
     </footer>
   );

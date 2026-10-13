@@ -35,7 +35,7 @@ const CookiesPage = lazy(() => import('./pages/legal/Cookies.tsx'));
 const Mentions = lazy(() => import('./pages/legal/Mentions.tsx'));
 const Admin = lazy(() => import('./pages/Admin.tsx'));
 const NotFound = lazy(() => import('./pages/NotFound.tsx'));
-const TradeCity = lazy(() => import('./pages/TradeCity.tsx'));
+const Ranking = lazy(() => import('./pages/Ranking.tsx'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,8 +100,9 @@ const App = ({ initialLocale }: { initialLocale: Locale }) => (
                       <Route path="/legal/cookies" element={<CookiesPage />} />
                       <Route path="/legal/mentions" element={<Mentions />} />
                       <Route path="/admin" element={<Admin />} />
-                      {/* Ranking page: /:trade/:city — validated inside the component */}
-                      <Route path="/:trade/:city" element={<TradeCity />} />
+                      {/* Rankings: /:trade/:city (cars), /:vehicle/:city, /:vehicle/:trade/:city — see lib/links.ts */}
+                      <Route path="/:a/:b" element={<Ranking />} />
+                      <Route path="/:a/:b/:c" element={<Ranking />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>

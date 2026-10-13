@@ -1,8 +1,16 @@
 import { forwardRef, useId, useMemo, useState } from 'react';
 import { LocateFixed, Loader2, MapPin } from 'lucide-react';
+import { usePlaces } from '@/hooks/usePlaces';
 import { useI18n } from '@/i18n/I18nProvider';
-import { cityName, searchCities, type City } from '@/lib/cities';
+import { CITIES, cityAliases, cityName, fold, type City } from '@/lib/cities';
 import { cn } from '@/lib/utils';
+
+/** Until the full list arrives, suggest the big towns. */
+function searchFeatured(query: string, limit: number): City[] {
+  const q = fold(query);
+  if (!q) return [];
+  return CITIES.filter((c) => cityAliases(c).some((n) => fold(n).startsWith(q)) || c.zips.some((z) => z.startsWith(q))).slice(0, limit);
+}
 
 interface Props {
   value: string;
@@ -25,11 +33,14 @@ export const CityField = forwardRef<HTMLInputElement, Props>(function CityField(
   const listId = useId();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
-  const options = useMemo(() => searchCities(value, 6), [value]);
+  // The ~2 800 localities load the first time the field is used.
+  const [wanted, setWanted] = useState(false);
+  const { data: places, isFetching } = usePlaces(wanted || value.trim().length > 0);
+  const options = useMemo(() => (places ? places.search(value, 7) : searchFeatured(value, 7)), [places, value]);
   const showList = open && value.trim().length > 0;
 
   const pick = (c: City) => {
-    onChange(cityName(c.slug, locale));
+    onChange(cityName(c, locale));
     onPick(c);
     setOpen(false);
   };
@@ -58,7 +69,11 @@ export const CityField = forwardRef<HTMLInputElement, Props>(function CityField(
           setOpen(true);
           setActive(0);
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          setOpen(true);
+          setWanted(true);
+        }}
+        onPointerEnter={() => setWanted(true)}
         onBlur={() => window.setTimeout(() => setOpen(false), 120)}
         onKeyDown={(e) => {
           if (!showList || options.length === 0) return;
@@ -70,7 +85,7 @@ export const CityField = forwardRef<HTMLInputElement, Props>(function CityField(
             setActive((i) => (i - 1 + options.length) % options.length);
           } else if (e.key === 'Enter' && options[active]) {
             // Let the form submit with the highlighted city.
-            onChange(cityName(options[active].slug, locale));
+            onChange(cityName(options[active], locale));
             onPick(options[active]);
             setOpen(false);
           } else if (e.key === 'Escape') {
@@ -104,7 +119,7 @@ export const CityField = forwardRef<HTMLInputElement, Props>(function CityField(
           className="absolute inset-x-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-xl border border-line bg-card py-1 shadow-lg"
         >
           {options.length === 0 ? (
-            <li className="px-4 py-3 text-[15px] text-slate1">{t('search.noMatch')}</li>
+            <li className="px-4 py-3 text-[15px] text-slate1">{!places && isFetching ? t('search.loadingPlaces') : t('search.noMatch')}</li>
           ) : (
             options.map((c, i) => (
               <li
@@ -120,8 +135,9 @@ export const CityField = forwardRef<HTMLInputElement, Props>(function CityField(
                 className={cn('flex cursor-pointer items-center gap-3 px-4 py-3', i === active && 'bg-paper-2')}
               >
                 <MapPin className="h-4 w-4 shrink-0 text-slate1" aria-hidden />
-                <span className="text-[15px] font-semibold text-ink">{cityName(c.slug, locale)}</span>
-                <span className="ml-auto text-[13px] text-slate1">{t(`home.regions.${c.region}`)}</span>
+                <span className="min-w-0 truncate text-[15px] font-semibold text-ink">{cityName(c, locale)}</span>
+                <span className="shrink-0 text-[14px] text-slate1 num">{c.zips[0]}</span>
+                <span className="ml-auto shrink-0 text-[13px] text-slate1">{t(`home.regions.${c.region}`)}</span>
               </li>
             ))
           )}

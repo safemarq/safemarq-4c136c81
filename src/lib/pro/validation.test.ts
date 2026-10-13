@@ -52,3 +52,15 @@ describe('Belgian phone numbers', () => {
     expect(formatPhone('+3281223344')).toBe('+32 81 22 33 44');
   });
 });
+
+describe('new establishment', () => {
+  const base = { name: 'Garage du Parc', street: 'Rue de Fer 1', postal_code: '5000', city: 'Namur', phone: '', website: '', brand: '' };
+
+  it('needs a vehicle and trades that vehicle has', async () => {
+    const { newGarageSchema } = await import('./validation');
+    expect(newGarageSchema.safeParse({ ...base, vehicles: ['moto'], trades: ['hivernage'] }).success).toBe(true);
+    expect(newGarageSchema.safeParse({ ...base, vehicles: [], trades: ['entretien'] }).success).toBe(false);
+    // No timing belt on a bike.
+    expect(newGarageSchema.safeParse({ ...base, vehicles: ['velo'], trades: ['distribution'] }).success).toBe(false);
+  });
+});

@@ -2,7 +2,7 @@ import Seo from '@/components/Seo';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import { HomeHero } from '@/components/home/HomeHero';
-import { TradesShowcase } from '@/components/home/TradesShowcase';
+import { TradesShowcase, VehiclesShowcase } from '@/components/home/TradesShowcase';
 import { TopRated } from '@/components/home/TopRated';
 import { ScoreExplainer } from '@/components/home/ScoreExplainer';
 import { CityIndex } from '@/components/home/CityIndex';
@@ -32,6 +32,7 @@ const Index = () => {
       <main id="contenu">
         <HomeHero garageCount={stats?.garages} />
         <TradesShowcase />
+        <VehiclesShowcase />
         <TopRated />
         <ScoreExplainer />
         <CityIndex />

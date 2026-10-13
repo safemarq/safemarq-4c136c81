@@ -22,7 +22,8 @@ export function BrandLink({ to = '/', className, onDark }: { to?: string; classN
   const { t } = useI18n();
   return (
     <Link to={to} className={cn('flex shrink-0 items-center gap-2.5 rounded-md', className)} aria-label={`SafeMarq, ${t('nav.home')}`}>
-      <BrandMark />
+      {/* On a navy band the navy mark needs an edge to stay visible. */}
+      <BrandMark className={onDark ? 'ring-1 ring-inset ring-chalk/25' : undefined} />
       <span className={cn('font-display text-[23px] font-bold leading-none', onDark ? 'text-chalk' : 'text-strong')}>
         SafeMarq
       </span>

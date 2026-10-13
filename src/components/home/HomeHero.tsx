@@ -1,17 +1,19 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import { useI18n } from '@/i18n/I18nProvider';
-import { tradeKey } from '@/i18n/keys';
-import { cityName, rememberCity } from '@/lib/cities';
+import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
+import { CITIES, cityName, rememberCity } from '@/lib/cities';
+import { rankingPath } from '@/lib/links';
 import { PHOTOS, photoSrcSet, photoUrl } from '@/lib/photos';
-import { getTrade } from '@/lib/trades';
+import { DEFAULT_VEHICLE, isVehicle, offers, type TradeSlug, type VehicleSlug } from '@/lib/taxonomy';
 
-const POPULAR: { trade: string; city: string }[] = [
-  { trade: 'carrosserie', city: 'namur' },
-  { trade: 'pneus', city: 'liege' },
-  { trade: 'entretien', city: 'bruxelles' },
-  { trade: 'controle-technique', city: 'charleroi' },
-  { trade: 'pare-brise', city: 'gand' },
+const POPULAR: { vehicle: VehicleSlug; trade: TradeSlug; city: string }[] = [
+  { vehicle: 'voiture', trade: 'carrosserie', city: 'namur' },
+  { vehicle: 'voiture', trade: 'pneus', city: 'liege' },
+  { vehicle: 'moto', trade: 'entretien', city: 'bruxelles' },
+  { vehicle: 'voiture', trade: 'controle-technique', city: 'charleroi' },
+  { vehicle: 'velo', trade: 'mecanique', city: 'gand' },
 ];
 
 // React 18 does not know the camelCase prop yet; pass the HTML attribute as is.
@@ -21,7 +23,13 @@ export function HomeHero({ garageCount }: { garageCount?: number }) {
   const { t, locale, formatNumber } = useI18n();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const requestedTrade = getTrade(params.get('metier') ?? undefined)?.slug;
+  // Links like /?vehicule=moto&metier=hivernage#recherche preset the search.
+  const paramVehicle = params.get('vehicule');
+  const requestedVehicle: VehicleSlug = isVehicle(paramVehicle) ? paramVehicle : DEFAULT_VEHICLE;
+  const paramTrade = params.get('metier');
+  const requestedTrade = paramTrade && offers(requestedVehicle, paramTrade) ? paramTrade : undefined;
+  const [vehicle, setVehicle] = useState<VehicleSlug>(requestedVehicle);
+  useEffect(() => setVehicle(requestedVehicle), [requestedVehicle]);
   const photo = PHOTOS.hero;
 
   return (
@@ -45,7 +53,7 @@ export function HomeHero({ garageCount }: { garageCount?: number }) {
 
       <div className="container-editorial flex min-h-[100svh] flex-col justify-end pb-8 pt-28 md:min-h-[min(94svh,900px)] md:pb-14 md:pt-36">
         <h1 className="max-w-[14ch] text-[44px] font-bold leading-[0.98] text-chalk sm:text-[56px] md:text-[76px] lg:text-[84px]">
-          {t('home.heroTitle')}
+          {t(vehicleKey(vehicle, 'heroTitle'))}
         </h1>
         <p className="mt-4 max-w-[34rem] text-[17px] leading-relaxed text-chalk/85 md:mt-5 md:text-xl">{t('home.heroLead')}</p>
         {garageCount !== undefined && garageCount >= 50 && (
@@ -53,23 +61,36 @@ export function HomeHero({ garageCount }: { garageCount?: number }) {
         )}
 
         <div id="recherche" className="mt-7 max-w-4xl scroll-mt-24 md:mt-10">
-          <SearchPanel initialTrade={requestedTrade} autoFocusCity={!!requestedTrade} />
+          <SearchPanel
+            key={requestedVehicle}
+            vehicle={vehicle}
+            onVehicleChange={setVehicle}
+            initialTrade={requestedTrade}
+            autoFocusCity={!!requestedTrade}
+          />
         </div>
 
         <div className="mt-5 max-w-4xl">
           <p className="sr-only">{t('search.popular')}</p>
           <ul className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
             {POPULAR.map((p) => (
-              <li key={`${p.trade}-${p.city}`} className="shrink-0">
+              <li key={`${p.vehicle}-${p.trade}-${p.city}`} className="shrink-0">
                 <button
                   type="button"
                   onClick={() => {
-                    rememberCity(p.city);
-                    navigate(`/${p.trade}/${p.city}`);
+                    const city = CITIES.find((c) => c.slug === p.city);
+                    if (city) rememberCity(city);
+                    navigate(rankingPath(p));
                   }}
                   className="inline-flex min-h-[40px] items-center rounded-full border border-chalk/25 bg-navy-900/35 px-4 text-sm font-medium text-chalk backdrop-blur-sm transition-colors hover:border-chalk/60 hover:bg-navy-900/60"
                 >
-                  {t('search.popularItem', { trade: t(tradeKey(p.trade)), city: cityName(p.city, locale) })}
+                  {p.vehicle === DEFAULT_VEHICLE
+                    ? t('search.popularItem', { trade: t(tradeLabelKey(p.trade)), city: cityName(p.city, locale) })
+                    : t('ranking.titleVehicle', {
+                        trade: t(tradeLabelKey(p.trade, p.vehicle)),
+                        vehicle: t(vehicleKey(p.vehicle, 'inline')),
+                        city: cityName(p.city, locale),
+                      })}
                 </button>
               </li>
             ))}

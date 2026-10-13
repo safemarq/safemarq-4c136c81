@@ -2,8 +2,12 @@ import { Link } from 'react-router-dom';
 import { BadgeCheck, MapPin, Star } from 'lucide-react';
 import { ScoreBadge } from '@/components/site/ScoreBadge';
 import { useI18n } from '@/i18n/I18nProvider';
-import type { RankedGarage } from '@/lib/ranking';
+import type { Listing } from '@/hooks/useRanking';
 import { cn } from '@/lib/utils';
+
+export type RowGarage = Pick<Listing, 'slug' | 'name' | 'rating' | 'reviews' | 'verified' | 'address' | 'score' | 'rank'> & {
+  distanceKm?: number | null;
+};
 
 export function Stars({ value, className }: { value: number; className?: string }) {
   return (
@@ -24,7 +28,7 @@ export function Stars({ value, className }: { value: number; className?: string 
 }
 
 /** One line of a ranking: rank, SafeMarq score, Google rating, address and actions. */
-export function GarageRow({ garage, cityLabel, compact = false }: { garage: RankedGarage; cityLabel: string; compact?: boolean }) {
+export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowGarage; cityLabel: string; compact?: boolean }) {
   const { t, tp, formatNumber } = useI18n();
   const top = garage.rank === 1 && !compact;
 
@@ -69,6 +73,11 @@ export function GarageRow({ garage, cityLabel, compact = false }: { garage: Rank
           <p className="mt-1 flex items-start gap-1.5 text-sm text-slate1">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span className="truncate">{garage.address}</span>
+            {garage.distanceKm != null && (
+              <span className="shrink-0 font-semibold text-ink">
+                · {t('ranking.distance', { km: formatNumber(garage.distanceKm, { maximumFractionDigits: 1 }) })}
+              </span>
+            )}
           </p>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '@/i18n/I18nProvider';
 import { CITIES, cityName, rememberCity, type Region } from '@/lib/cities';
+import { rankingPath } from '@/lib/links';
 
 const REGIONS: Region[] = ['brussels', 'wallonia', 'flanders'];
 
@@ -17,19 +18,19 @@ export function CityIndex() {
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_2fr_2fr] md:gap-8">
         {REGIONS.map((region) => {
           const cities = CITIES.filter((c) => c.region === region).sort((a, b) =>
-            collator.compare(cityName(a.slug, locale), cityName(b.slug, locale)),
+            collator.compare(cityName(a, locale), cityName(b, locale)),
           );
           return (
             <div key={region}>
               <h3 className="border-b-2 border-strong pb-2 text-2xl font-semibold text-strong">{t(`home.regions.${region}`)}</h3>
               <ul className={`mt-2 grid gap-x-6 ${cities.length > 1 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-1'}`}>
                 {cities.map((c) => {
-                  const name = cityName(c.slug, locale);
+                  const name = cityName(c, locale);
                   return (
                     <li key={c.slug}>
                       <Link
-                        to={`/mecanique/${c.slug}`}
-                        onClick={() => rememberCity(c.slug)}
+                        to={rankingPath({ vehicle: 'voiture', trade: null, city: c.slug })}
+                        onClick={() => rememberCity(c)}
                         className="block border-b border-line py-3 text-[16px] font-medium text-ink transition-colors hover:text-strong hover:underline"
                         title={t('home.cityLink', { city: name })}
                       >

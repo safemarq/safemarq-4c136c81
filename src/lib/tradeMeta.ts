@@ -1,50 +1,132 @@
 import {
+  Activity,
+  Anchor,
+  Aperture,
+  Armchair,
   BatteryCharging,
+  Bike,
   Boxes,
+  Car,
   CarFront,
+  Caravan,
   CircleDot,
   ClipboardCheck,
+  Clock,
   Cog,
+  Crosshair,
+  Cylinder,
+  Disc3,
+  Drill,
   Droplet,
+  Flag,
+  Flame,
+  Fuel,
   Gauge,
+  Hammer,
+  History,
+  KeyRound,
+  Layers,
+  Link2,
+  PaintRoller,
   PanelTop,
+  PlugZap,
+  Radio,
+  Recycle,
+  Sailboat,
   ScanLine,
+  Settings,
+  ShieldAlert,
+  ShowerHead,
+  Siren,
   Snowflake,
   Sparkles,
+  SprayCan,
+  Timer,
   Truck,
+  Umbrella,
+  Warehouse,
+  Wind,
+  createLucideIcon,
   type LucideIcon,
 } from 'lucide-react';
+import type { TradeSlug, VehicleSlug } from './taxonomy';
+
+// Lucide has no motorbike or kick scooter: drawn here on the same 24px grid and stroke.
+const Motorbike = createLucideIcon('Motorbike', [
+  ['circle', { cx: '5', cy: '16.5', r: '3.5', key: 'rear' }],
+  ['circle', { cx: '19', cy: '16.5', r: '3.5', key: 'front' }],
+  ['path', { d: 'M14.5 6H17l2 10.5', key: 'fork' }],
+  ['path', { d: 'M5 16.5 8.5 11H17', key: 'frame' }],
+  ['path', { d: 'M9 16.5h4.5L17 11', key: 'engine' }],
+  ['path', { d: 'M7 8.5h4', key: 'seat' }],
+]);
+
+const KickScooter = createLucideIcon('KickScooter', [
+  ['circle', { cx: '5', cy: '18', r: '2.5', key: 'rear' }],
+  ['circle', { cx: '19', cy: '18', r: '2.5', key: 'front' }],
+  ['path', { d: 'M7.5 18H15l1.5-2', key: 'deck' }],
+  ['path', { d: 'M19 18 15.5 4', key: 'stem' }],
+  ['path', { d: 'M13 4h5', key: 'bar' }],
+]);
+
+export const VEHICLE_ICON: Record<VehicleSlug, LucideIcon> = {
+  voiture: Car,
+  moto: Motorbike,
+  utilitaire: Truck,
+  'camping-car': Caravan,
+  velo: Bike,
+  trottinette: KickScooter,
+  bateau: Sailboat,
+};
 
 /** One icon per trade, used in tabs, menus and tiles. */
-export const TRADE_ICON: Record<string, LucideIcon> = {
+export const TRADE_ICON: Record<TradeSlug, LucideIcon> = {
   entretien: Droplet,
   mecanique: Cog,
+  freinage: Disc3,
+  distribution: Timer,
+  'embrayage-boite': Settings,
+  echappement: Wind,
+  suspension: Activity,
+  'injection-turbo': Fuel,
   diagnostic: ScanLine,
   electricite: BatteryCharging,
   climatisation: Snowflake,
+  'electrique-hybride': PlugZap,
+  multimedia: Radio,
+  alarme: ShieldAlert,
+  cles: KeyRound,
   carrosserie: CarFront,
+  peinture: SprayCan,
+  debosselage: Hammer,
   'pare-brise': PanelTop,
+  covering: Layers,
   detailing: Sparkles,
-  'preparation-perf': Gauge,
+  lavage: ShowerHead,
+  jantes: Aperture,
+  sellerie: Armchair,
+  restauration: History,
+  etancheite: Umbrella,
+  carenage: Anchor,
+  coque: PaintRoller,
   pneus: CircleDot,
+  geometrie: Crosshair,
   'controle-technique': ClipboardCheck,
-  depannage: Truck,
+  depannage: Siren,
+  'preparation-perf': Gauge,
+  lpg: Flame,
+  attelage: Link2,
+  amenagement: Drill,
+  tachygraphe: Clock,
+  gaz: Cylinder,
+  voilerie: Flag,
   pieces: Boxes,
+  'pieces-occasion': Recycle,
+  hivernage: Warehouse,
 };
 
-export const tradeIcon = (slug: string): LucideIcon => TRADE_ICON[slug] ?? Cog;
+export const tradeIcon = (slug: string): LucideIcon => TRADE_ICON[slug as TradeSlug] ?? Cog;
+export const vehicleIcon = (slug: string): LucideIcon => VEHICLE_ICON[slug as VehicleSlug] ?? Car;
 
-/** How the 13 trades are grouped in menus: by the kind of problem a driver has. */
-export const TRADE_GROUPS = [
-  { id: 'care', trades: ['entretien', 'mecanique', 'diagnostic', 'electricite', 'climatisation'] },
-  { id: 'body', trades: ['carrosserie', 'pare-brise', 'detailing', 'preparation-perf'] },
-  { id: 'road', trades: ['pneus', 'controle-technique', 'depannage', 'pieces'] },
-] as const;
-
-export type TradeGroupId = (typeof TRADE_GROUPS)[number]['id'];
-
-/** Shown as tabs above the search box: the jobs people search for most. */
-export const FEATURED_TRADES = ['entretien', 'carrosserie', 'pneus', 'controle-technique'] as const;
-
-/** Trades with a photo tile on the home page. */
+/** Car trades with a photo tile on the home page. */
 export const PHOTO_TRADES = ['entretien', 'carrosserie', 'pneus', 'controle-technique'] as const;

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useI18n } from '@/i18n/I18nProvider';
-import { tradeKey } from '@/i18n/keys';
+import { tradeKey, vehicleKey } from '@/i18n/keys';
 import { LOCALE_META, isLocale } from '@/i18n/config';
 import type { MessageKey } from '@/i18n/types';
 import { formatBce, formatPhone, type CompanyValues, type ContactValues, type NewGarageValues } from '@/lib/pro/validation';
@@ -75,6 +75,9 @@ export function ReviewStep({ company, contact, establishment, onEdit, onBack, on
                 <Row label={t('pro.onboarding.review.newListing')}>{establishment.newGarage.name}</Row>
                 <Row label={t('pro.onboarding.establishment.street')}>
                   {establishment.newGarage.street}, {establishment.newGarage.postal_code} {establishment.newGarage.city}
+                </Row>
+                <Row label={t('pro.onboarding.establishment.vehicles')}>
+                  {establishment.newGarage.vehicles.map((v) => t(vehicleKey(v, 'label'))).join(', ')}
                 </Row>
                 <Row label={t('pro.onboarding.establishment.trades')}>
                   {establishment.newGarage.trades.map((s) => t(tradeKey(s))).join(', ')}
