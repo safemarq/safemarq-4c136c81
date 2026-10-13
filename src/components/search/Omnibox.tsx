@@ -64,15 +64,16 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
     onPick(o);
   };
 
-  const describe = (s: Suggestion): { title: string; meta?: string; icon: React.ComponentType<{ className?: string }> } => {
+  const describe = (s: Suggestion): { title: string; meta?: string[]; icon: React.ComponentType<{ className?: string }> } => {
+    const where = (c: City) => [c.zips[0], t(`home.regions.${c.region}`)];
     if (s.kind === 'city') {
-      return { title: cityName(s.city, locale), meta: `${s.city.zips[0]} · ${t(`home.regions.${s.city.region}`)}`, icon: MapPin };
+      return { title: cityName(s.city, locale), meta: where(s.city), icon: MapPin };
     }
     const trade = s.trade ? t(tradeLabelKey(s.trade, s.vehicle)) : null;
     const inline = t(vehicleKey(s.vehicle, 'inline'));
     const what = trade ? (s.vehicle === DEFAULT_VEHICLE ? trade : `${trade} (${inline})`) : t(vehicleKey(s.vehicle, 'pros'));
     const icon = s.trade ? tradeIcon(s.trade) : vehicleIcon(s.vehicle);
-    if (s.kind === 'trade') return { title: what, meta: t('searchPage.tradeOnlyHint'), icon };
+    if (s.kind === 'trade') return { title: what, meta: [t('searchPage.tradeOnlyHint')], icon };
     if (s.nearMe) return { title: t('searchPage.nearMe', { what }), icon: LocateFixed };
     if (!s.city) return { title: what, icon };
     const city = cityName(s.city, locale);
@@ -81,7 +82,7 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
       : s.vehicle === DEFAULT_VEHICLE
         ? t('ranking.title', { trade, city })
         : t('ranking.titleVehicle', { trade, vehicle: inline, city });
-    return { title, meta: `${s.city.zips[0]} · ${t(`home.regions.${s.city.region}`)}`, icon };
+    return { title, meta: where(s.city), icon };
   };
 
   const optionId = (i: number) => `${listId}-o${i}`;
@@ -151,7 +152,7 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
           className="absolute inset-x-0 top-[calc(100%+6px)] z-40 max-h-[min(70vh,32rem)] overflow-y-auto rounded-xl border border-line bg-card py-1.5 shadow-lg"
         >
           {searches.length > 0 && (
-            <p className="px-4 pb-1 pt-2 text-[12px] font-semibold uppercase tracking-wide text-slate1" aria-hidden>
+            <p className="px-4 pb-1 pt-2 text-[13px] font-semibold text-slate1" aria-hidden>
               {t('searchPage.groupSearches')}
             </p>
           )}
@@ -164,14 +165,14 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-semibold text-ink">{d.title}</span>
-                  {d.meta && <span className="block truncate text-[13px] text-slate1">{d.meta}</span>}
+                  {d.meta && <Meta parts={d.meta} />}
                 </span>
               </Option>
             );
           })}
           {garageOptions.length > 0 && (
             <p
-              className={cn('px-4 pb-1 text-[12px] font-semibold uppercase tracking-wide text-slate1', searches.length ? 'mt-1 border-t border-line pt-3' : 'pt-2')}
+              className={cn('px-4 pb-1 text-[13px] font-semibold text-slate1', searches.length ? 'mt-1 border-t border-line pt-3' : 'pt-2')}
               aria-hidden
             >
               {t('searchPage.groupGarages')}
@@ -189,11 +190,12 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
                     <span className="truncate">{g.name}</span>
                     {g.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-teal" aria-hidden />}
                   </span>
-                  <span className="block truncate text-[13px] text-slate1">
-                    {[g.postalCode && g.locality ? `${g.postalCode} ${g.locality}` : g.locality, g.distanceKm !== null && t('ranking.distance', { km: formatNumber(g.distanceKm, { maximumFractionDigits: 1 }) })]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
+                  <Meta
+                    parts={[
+                      g.postalCode && g.locality ? `${g.postalCode} ${g.locality}` : g.locality,
+                      g.distanceKm !== null ? t('ranking.distance', { km: formatNumber(g.distanceKm, { maximumFractionDigits: 1 }) }) : null,
+                    ]}
+                  />
                 </span>
                 <span className="shrink-0 rounded-md bg-strong px-2 py-1 text-[13px] font-bold text-paper num" aria-label={t('searchPage.scoreShort', { score: g.score })}>
                   {g.score}
@@ -206,6 +208,19 @@ export const Omnibox = forwardRef<HTMLInputElement, Props>(function Omnibox(
     </div>
   );
 });
+
+/** Secondary details side by side, spaced rather than joined with dots. */
+function Meta({ parts }: { parts: (string | null | undefined)[] }) {
+  return (
+    <span className="flex min-w-0 gap-x-3 text-[13px] text-slate1">
+      {parts.filter(Boolean).map((p, i) => (
+        <span key={i} className={i === 0 ? 'truncate' : 'shrink-0'}>
+          {p}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 function Option({
   id,

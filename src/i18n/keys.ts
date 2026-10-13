@@ -16,5 +16,6 @@ export function tradeInfoKey(slug: string, vehicle?: VehicleSlug): MessageKey {
   return (o ? `tradeOverrides.${o}.info` : `tradeInfo.${slug}`) as MessageKey;
 }
 
-type VehicleField = 'label' | 'short' | 'inline' | 'pros' | 'heroTitle';
+/** mine: "ma voiture"; someone: "Un garage" (the home sentence). */
+type VehicleField = 'label' | 'short' | 'inline' | 'pros' | 'mine' | 'someone';
 export const vehicleKey = (vehicle: VehicleSlug, field: VehicleField): MessageKey => `vehicles.${vehicle}.${field}`;

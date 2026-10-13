@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Menu, Search } from 'lucide-react';
+import { ChevronDown, Menu, Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TradeList } from '@/components/search/TradeList';
@@ -282,9 +282,8 @@ function MenuFeature({ onNavigate }: { onNavigate: () => void }) {
       <span className="absolute inset-x-0 bottom-0 block p-6 text-chalk">
         <span className="block font-display text-2xl font-semibold leading-tight">{t('menu.featuredTitle')}</span>
         <span className="mt-2 block text-[15px] text-chalk/80">{t('menu.featuredBody')}</span>
-        <span className="mt-4 inline-flex items-center gap-1.5 text-[15px] font-semibold text-amber">
+        <span className="mt-4 inline-flex items-center text-[15px] font-semibold text-amber underline-offset-4 group-hover:underline">
           {t('menu.featuredCta')}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
         </span>
       </span>
     </Link>

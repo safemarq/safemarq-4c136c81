@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { GarageRow } from '@/components/ranking/GarageRow';
 import { useRanking } from '@/hooks/useRanking';
 import { useI18n } from '@/i18n/I18nProvider';
@@ -31,9 +30,11 @@ export function TopRated() {
             </h2>
             <p className="mt-3 text-lg text-slate1">{t('home.topLead')}</p>
           </div>
-          <Link to={rankingPath({ vehicle: 'voiture', trade: null, city: city.slug })} className="inline-flex items-center gap-2 font-semibold text-strong hover:underline">
+          <Link
+            to={rankingPath({ vehicle: 'voiture', trade: null, city: city.slug })}
+            className="inline-flex min-h-[44px] items-center font-semibold text-strong underline-offset-4 hover:underline"
+          >
             {t('home.topSeeAll')}
-            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
         <ol className="mt-6 space-y-3">

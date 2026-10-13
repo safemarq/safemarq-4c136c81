@@ -139,11 +139,14 @@ export function CityChooser({
   onLocate,
   locating,
   autoFocus,
+  error,
 }: {
   onCity: (c: City) => void;
   onLocate: () => void;
   locating: boolean;
   autoFocus?: boolean;
+  /** Why the position could not be used, shown under the button. */
+  error?: string | null;
 }) {
   const { t, locale } = useI18n();
   const [text, setText] = useState('');
@@ -169,6 +172,11 @@ export function CityChooser({
         {locating ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : <LocateFixed className="h-5 w-5" aria-hidden />}
         {locating ? t('search.locating') : t('searchPage.nearMeShort')}
       </button>
+      {error && (
+        <p role="alert" className="mt-1 px-2 text-sm font-medium text-destructive">
+          {error}
+        </p>
+      )}
       <p className="mb-2 mt-4 text-[13px] font-semibold text-slate1">{t('searchPage.bigCities')}</p>
       <ul className="flex flex-wrap gap-2">
         {CITIES.slice(0, 10).map((c) => (

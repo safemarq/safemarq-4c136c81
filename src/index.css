@@ -284,6 +284,20 @@
   }
 }
 
+/* Home sentence: a word leaves upwards while the next one rises (HomeHero.tsx). */
+@keyframes sm-roll-in {
+  from { transform: translateY(0.62em); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes sm-roll-out {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-0.62em); opacity: 0; }
+}
+@layer components {
+  .sm-roll-in { animation: sm-roll-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .sm-roll-out { animation: sm-roll-out 200ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+
 /* Search map: score pins (SearchMap.tsx). Leaflet renders them outside React. */
 @layer components {
   .sm-pin {

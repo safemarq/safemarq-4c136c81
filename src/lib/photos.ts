@@ -1,3 +1,5 @@
+import type { VehicleSlug } from './taxonomy';
+
 /**
  * Photography, served by Unsplash's image CDN (free Unsplash License, no
  * attribution required; credits kept here). Each photo has a focal point so
@@ -15,8 +17,8 @@ export interface Photo {
 }
 
 export const PHOTOS = {
-  // Bright workshop, red SUV on a lift with a mechanic under the bonnet.
-  hero: { id: 'photo-1727893119356-1702fe921cf9', fx: 0.7, fy: 0.55, credit: 'Mehmet Talha Onuk / Unsplash' },
+  // Close-up: a hand with a spanner in a warm-lit engine bay, dark all around.
+  hero: { id: 'photo-1619642751034-765dfdf7c58e', fx: 0.6, fy: 0.55, credit: 'Christian Buehner / Unsplash' },
   // Mechanic leaning into an open engine bay.
   entretien: { id: 'photo-1771340012319-0b4fca008b54', fx: 0.55, fy: 0.5, credit: 'Dextar Studio / Unsplash' },
   // Crumpled rear door of a red car on a flatbed.
@@ -25,9 +27,25 @@ export const PHOTOS = {
   pneus: { id: 'photo-1632823471565-1ecf94f8799a', fx: 0.38, fy: 0.6, credit: 'Deniz Demirci / Unsplash' },
   // Technician with a checklist in a workshop.
   'controle-technique': { id: 'photo-1700727448575-6f1680cd7d75', fx: 0.6, fy: 0.45, credit: 'TruckRun / Unsplash' },
-  // Smiling mechanic wiring a dashboard.
-  pro: { id: 'photo-1628577478162-d4d00467c627', fx: 0.65, fy: 0.45, credit: 'Kato Blackmore / Unsplash' },
 } satisfies Record<string, Photo>;
+
+/** One photo per vehicle: home directory, rankings without a trade photo. */
+export const VEHICLE_PHOTOS: Record<VehicleSlug, Photo> = {
+  // Bright workshop, red SUV on a lift with a mechanic under the bonnet.
+  voiture: { id: 'photo-1727893119356-1702fe921cf9', fx: 0.72, fy: 0.55, credit: 'Mehmet Talha Onuk / Unsplash' },
+  // Red roadster on a paddock stand, engine and rear shock in the light.
+  moto: { id: 'photo-1784058793055-2e2b876ef3b5', fx: 0.5, fy: 0.35, credit: 'Konrad Nowacki / Unsplash' },
+  // Yellow van parked on cobblestones in front of a brick house.
+  utilitaire: { id: 'photo-1591706515036-cb0f48dc5e62', fx: 0.47, fy: 0.5, credit: 'Claudio Schwarz / Unsplash' },
+  // Camper van at night, lit from inside, two folding chairs beside it.
+  'camping-car': { id: 'photo-1766083639110-ec7c4ad90490', fx: 0.66, fy: 0.45, credit: 'Fabio Sasso / Unsplash' },
+  // A bicycle taken apart, every part laid out on a wooden bench.
+  velo: { id: 'photo-1669637842182-aa5656dd1492', fx: 0.45, fy: 0.5, credit: 'paolo candelo / Unsplash' },
+  // Electric scooter on paving stones at sunset.
+  trottinette: { id: 'photo-1657008846502-e03a84f49baa', fx: 0.4, fy: 0.6, credit: 'Hiboy / Unsplash' },
+  // Old wooden sailing boat on stands in a boatyard, hull being worked on.
+  bateau: { id: 'photo-1777982822846-3a535f75aed6', fx: 0.5, fy: 0.55, credit: 'Margo Evardson / Unsplash' },
+};
 
 export type PhotoKey = keyof typeof PHOTOS;
 

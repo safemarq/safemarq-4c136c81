@@ -2,7 +2,7 @@ import Seo from '@/components/Seo';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import { HomeHero } from '@/components/home/HomeHero';
-import { TradesShowcase, VehiclesShowcase } from '@/components/home/TradesShowcase';
+import { TradeDirectory } from '@/components/home/TradeDirectory';
 import { TopRated } from '@/components/home/TopRated';
 import { ScoreExplainer } from '@/components/home/ScoreExplainer';
 import { CityIndex } from '@/components/home/CityIndex';
@@ -30,12 +30,11 @@ const Index = () => {
       />
       <SiteHeader overlay />
       <main id="contenu">
-        <HomeHero garageCount={stats?.garages} />
-        <TradesShowcase />
-        <VehiclesShowcase />
+        <HomeHero />
+        <TradeDirectory />
         <TopRated />
         <ScoreExplainer />
-        <CityIndex />
+        <CityIndex garageCount={stats?.garages} />
         <ProBand />
       </main>
       <SiteFooter />

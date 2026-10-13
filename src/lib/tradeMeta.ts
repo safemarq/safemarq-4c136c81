@@ -127,6 +127,3 @@ export const TRADE_ICON: Record<TradeSlug, LucideIcon> = {
 
 export const tradeIcon = (slug: string): LucideIcon => TRADE_ICON[slug as TradeSlug] ?? Cog;
 export const vehicleIcon = (slug: string): LucideIcon => VEHICLE_ICON[slug as VehicleSlug] ?? Car;
-
-/** Car trades with a photo tile on the home page. */
-export const PHOTO_TRADES = ['entretien', 'carrosserie', 'pneus', 'controle-technique'] as const;

@@ -51,7 +51,7 @@ export function PickerShell({
       <PopoverContent
         align="start"
         sideOffset={10}
-        className={cn('max-h-[min(70vh,40rem)] overflow-y-auto rounded-2xl border-line bg-card p-5 shadow-lg', wide ? 'w-[min(56rem,calc(100vw-3rem))]' : width)}
+        className={cn('max-h-[min(70vh,40rem,var(--radix-popover-content-available-height))] overflow-y-auto rounded-2xl border-line bg-card p-5 shadow-lg', wide ? 'w-[min(56rem,calc(100vw-3rem))]' : width)}
       >
         {children}
       </PopoverContent>

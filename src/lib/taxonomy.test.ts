@@ -52,7 +52,7 @@ describe('taxonomy', () => {
         expect(m.tradeInfo[t], `${lang} tradeInfo.${t}`).toBeTruthy();
       }
       for (const v of VEHICLES) {
-        for (const f of ['label', 'short', 'pros', 'heroTitle'] as const) expect(m.vehicles[v][f], `${lang} ${v}.${f}`).toBeTruthy();
+        for (const f of ['label', 'short', 'pros', 'mine', 'someone'] as const) expect(m.vehicles[v][f], `${lang} ${v}.${f}`).toBeTruthy();
       }
       for (const [v, list] of Object.entries(TRADE_OVERRIDES)) {
         const o = (m.tradeOverrides as Record<string, Record<string, { label: string; info: string }>>)[v];

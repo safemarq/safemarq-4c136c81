@@ -12,9 +12,9 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
 import { getCity, cityName, nearbyCities, rememberCity, type City } from '@/lib/cities';
 import { parseRankingPath, rankingPath, searchPageHref, type RankingTarget } from '@/lib/links';
-import { PHOTOS, photoSrcSet, photoUrl, tradePhoto } from '@/lib/photos';
+import { VEHICLE_PHOTOS, photoSrcSet, photoUrl, tradePhoto } from '@/lib/photos';
 import { DEFAULT_VEHICLE, FEATURED_TRADES } from '@/lib/taxonomy';
-import { tradeIcon, vehicleIcon } from '@/lib/tradeMeta';
+import { tradeIcon } from '@/lib/tradeMeta';
 import { cn } from '@/lib/utils';
 
 /** /:a/:b and /:a/:b/:c — see lib/links.ts for the URL scheme. */
@@ -98,8 +98,8 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
       ? t('ranking.title', { trade: tradeLabel, city: cityLabel })
       : t('ranking.titleVehicle', { trade: tradeLabel, vehicle: vehicleInline, city: cityLabel });
 
-  const photo = vehicle === DEFAULT_VEHICLE ? (trade && tradePhoto(trade)) || PHOTOS.hero : null;
-  const VehicleIcon = vehicleIcon(vehicle);
+  // Car trades have their own photo; otherwise the vehicle's.
+  const photo = (vehicle === DEFAULT_VEHICLE && trade && tradePhoto(trade)) || VEHICLE_PHOTOS[vehicle];
   const nextRadius = RADIUS_OPTIONS.find((r) => r > radius);
 
   const jsonLd = items.length
@@ -123,22 +123,15 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
 
       <main id="contenu">
         <section className="relative isolate overflow-hidden bg-navy-900 text-chalk">
-          {photo ? (
-            <>
-              <img
-                src={photoUrl(photo, 1920, 640)}
-                srcSet={photoSrcSet(photo, [640, 1280, 1920, 2560], 3)}
-                sizes="100vw"
-                alt=""
-                decoding="async"
-                className="absolute inset-0 -z-20 h-full w-full object-cover"
-              />
-              <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,hsl(var(--navy-900)/0.94)_0%,hsl(var(--navy-900)/0.78)_45%,hsl(var(--navy-900)/0.45)_100%)]" />
-            </>
-          ) : (
-            // No stock photo of boats or scooters: the vehicle's own mark, large and quiet.
-            <VehicleIcon aria-hidden strokeWidth={1.1} className="absolute -right-10 bottom-0 -z-10 h-[22rem] w-[22rem] text-chalk/[0.06] md:right-[6%] md:h-[30rem] md:w-[30rem]" />
-          )}
+          <img
+            src={photoUrl(photo, 1920, 640)}
+            srcSet={photoSrcSet(photo, [640, 1280, 1920, 2560], 3)}
+            sizes="100vw"
+            alt=""
+            decoding="async"
+            className="absolute inset-0 -z-20 h-full w-full object-cover"
+          />
+          <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,hsl(var(--navy-900)/0.94)_0%,hsl(var(--navy-900)/0.78)_45%,hsl(var(--navy-900)/0.45)_100%)]" />
           <div className="container-editorial pb-24 pt-28 md:pb-28 md:pt-36">
             <nav aria-label={t('ranking.breadcrumbLabel')} className="flex flex-wrap items-center gap-1.5 text-sm text-chalk/75">
               <Link to="/" className="hover:text-chalk hover:underline">
@@ -179,7 +172,6 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
         <div className="container-editorial relative z-10 -mt-14 md:-mt-16">
           <SearchPanel
             key={`${vehicle}-${trade}-${city.slug}`}
-            variant="compact"
             initialVehicle={vehicle}
             initialTrade={trade}
             initialCity={city}

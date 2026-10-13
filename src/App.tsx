@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { MotionConfig } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -63,61 +64,64 @@ function ScrollManager() {
 const PageFallback = () => <div className="min-h-[100dvh] bg-background" aria-busy="true" />;
 
 const App = ({ initialLocale }: { initialLocale: Locale }) => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider initialLocale={initialLocale}>
-        <ThemeProvider>
-          <AuthProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <ScrollManager />
-                <ErrorBoundary>
-                  <Suspense fallback={<PageFallback />}>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/favorites" element={<Favorites />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/vehicles" element={<Vehicles />} />
+  // Visitors who ask their system for less motion get none of the framer-motion animations.
+  <MotionConfig reducedMotion="user">
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider initialLocale={initialLocale}>
+          <ThemeProvider>
+            <AuthProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <ScrollManager />
+                  <ErrorBoundary>
+                    <Suspense fallback={<PageFallback />}>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/favorites" element={<Favorites />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/vehicles" element={<Vehicles />} />
 
-                      {/* Pro area: one entry point for garages and dealers */}
-                      <Route path="/pro" element={<Pro />} />
-                      <Route path="/pro/connexion" element={<ProAuth />} />
-                      <Route path="/pro/nouveau-mot-de-passe" element={<ProResetPassword />} />
-                      <Route path="/pro/inscription" element={<ProOnboarding />} />
-                      <Route path="/pro/dashboard" element={<ProDashboard />} />
-                      <Route path="/pro/claim" element={<Navigate to="/pro/inscription" replace />} />
-                      <Route path="/dashboard" element={<Navigate to="/pro/dashboard" replace />} />
+                        {/* Pro area: one entry point for garages and dealers */}
+                        <Route path="/pro" element={<Pro />} />
+                        <Route path="/pro/connexion" element={<ProAuth />} />
+                        <Route path="/pro/nouveau-mot-de-passe" element={<ProResetPassword />} />
+                        <Route path="/pro/inscription" element={<ProOnboarding />} />
+                        <Route path="/pro/dashboard" element={<ProDashboard />} />
+                        <Route path="/pro/claim" element={<Navigate to="/pro/inscription" replace />} />
+                        <Route path="/dashboard" element={<Navigate to="/pro/dashboard" replace />} />
 
-                      <Route path="/pricing" element={<Pricing />} />
-                      <Route path="/billing/success" element={<BillingSuccess />} />
-                      <Route path="/billing/cancel" element={<BillingCancel />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/recherche" element={<Search />} />
-                      <Route path="/garage/:id" element={<GarageDetail />} />
-                      <Route path="/legal/terms" element={<Terms />} />
-                      <Route path="/legal/privacy" element={<Privacy />} />
-                      <Route path="/legal/cookies" element={<CookiesPage />} />
-                      <Route path="/legal/mentions" element={<Mentions />} />
-                      <Route path="/admin" element={<Admin />} />
-                      {/* Rankings: /:trade/:city (cars), /:vehicle/:city, /:vehicle/:trade/:city — see lib/links.ts */}
-                      <Route path="/:a/:b" element={<Ranking />} />
-                      <Route path="/:a/:b/:c" element={<Ranking />} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                  <CookieBanner />
-                </ErrorBoundary>
-              </BrowserRouter>
-            </TooltipProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </I18nProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
+                        <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/billing/success" element={<BillingSuccess />} />
+                        <Route path="/billing/cancel" element={<BillingCancel />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/recherche" element={<Search />} />
+                        <Route path="/garage/:id" element={<GarageDetail />} />
+                        <Route path="/legal/terms" element={<Terms />} />
+                        <Route path="/legal/privacy" element={<Privacy />} />
+                        <Route path="/legal/cookies" element={<CookiesPage />} />
+                        <Route path="/legal/mentions" element={<Mentions />} />
+                        <Route path="/admin" element={<Admin />} />
+                        {/* Rankings: /:trade/:city (cars), /:vehicle/:city, /:vehicle/:trade/:city — see lib/links.ts */}
+                        <Route path="/:a/:b" element={<Ranking />} />
+                        <Route path="/:a/:b/:c" element={<Ranking />} />
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                    <CookieBanner />
+                  </ErrorBoundary>
+                </BrowserRouter>
+              </TooltipProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </I18nProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  </MotionConfig>
 );
 
 export default App;

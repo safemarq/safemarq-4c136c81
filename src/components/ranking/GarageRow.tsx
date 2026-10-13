@@ -74,8 +74,8 @@ export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowG
             <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span className="truncate">{garage.address}</span>
             {garage.distanceKm != null && (
-              <span className="shrink-0 font-semibold text-ink">
-                · {t('ranking.distance', { km: formatNumber(garage.distanceKm, { maximumFractionDigits: 1 }) })}
+              <span className="ml-1.5 shrink-0 font-semibold text-ink">
+                {t('ranking.distance', { km: formatNumber(garage.distanceKm, { maximumFractionDigits: 1 }) })}
               </span>
             )}
           </p>
