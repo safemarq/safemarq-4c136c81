@@ -106,7 +106,13 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <Seo title={t('ranking.metaTitle', { title })} description={t('ranking.metaDescription', { title })} jsonLd={jsonLd} />
+      {/* An empty ranking is a thin page for search engines: kept out until garages are listed. */}
+      <Seo
+        title={t('ranking.metaTitle', { title })}
+        description={t('ranking.metaDescription', { title })}
+        jsonLd={jsonLd}
+        noindex={!isLoading && !isError && !isPlaceholderData && items.length === 0}
+      />
       <SiteHeader overlay />
 
       <main id="contenu">

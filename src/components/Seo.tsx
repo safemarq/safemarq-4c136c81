@@ -12,17 +12,20 @@ interface Props {
 
 const SITE_NAME = 'SafeMarq';
 const DEFAULT_DESC = 'Comparez les garages automobiles de Belgique. Classement basé sur les avis Google, qui ne s’achète pas.';
-const DEFAULT_IMAGE = '/og-image.jpg';
+// Social networks need an absolute URL.
+const DEFAULT_IMAGE = 'https://safemarq.com/og-image.jpg';
 
 const Seo = ({ title, description = DEFAULT_DESC, canonical, image = DEFAULT_IMAGE, type = 'website', jsonLd, noindex }: Props) => {
   const fullTitle = title.toLowerCase().includes('safemarq') ? title : `${title} | ${SITE_NAME}`;
-  const url = canonical || (typeof window !== 'undefined' ? window.location.href : '');
+  // Always the public domain, without query string or hash: previews and filters are not separate pages.
+  const url = canonical || (typeof window !== 'undefined' ? `https://safemarq.com${window.location.pathname}` : '');
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
-      {noindex && <meta name="robots" content="noindex,nofollow" />}
+      {/* "follow": an empty or private page still passes its links on. */}
+      {noindex && <meta name="robots" content="noindex,follow" />}
       {url && <link rel="canonical" href={url} />}
 
       <meta property="og:type" content={type} />

@@ -152,7 +152,7 @@ export default function BlogPost() {
               <li key={p.id}>
                 <Link to={blogPath(p.slug)} className="group block py-5">
                   <span className="block font-display text-[22px] font-semibold leading-tight text-strong group-hover:underline group-hover:underline-offset-4">{keepPunctuation(p.title)}</span>
-                  {p.excerpt && <span className="mt-1 block text-[15px] text-slate1">{p.excerpt}</span>}
+                  {p.excerpt && <span className="mt-1 block text-[15px] text-slate1">{keepPunctuation(p.excerpt)}</span>}
                 </Link>
               </li>
             ))}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Check, X, Sparkles, ShieldCheck } from 'lucide-react';
@@ -8,7 +9,6 @@ import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGarageOwnership } from '@/hooks/useDashboard';
-import { useGarages } from '@/hooks/useGarages';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { GarageTier } from '@/hooks/useGarageTier';
@@ -30,7 +30,7 @@ const TIERS: TierConfig[] = [
     name: 'Free',
     price: '0€',
     period: 'pour toujours',
-    description: "L'essentiel pour être présent sur SAFEMARQ.",
+    description: "L'essentiel pour être présent sur SafeMarq.",
     features: [
       { text: 'Page garage publique', included: true },
       { text: 'Réponse aux avis clients', included: true },
@@ -58,9 +58,6 @@ const TIERS: TierConfig[] = [
       { text: "Jusqu'à 20 photos d'atelier", included: true },
       { text: 'Description longue détaillée', included: true },
       { text: 'Liste des services avec tarifs', included: true },
-      { text: 'Prise de RDV intégrée', included: true },
-      { text: 'Analytics (vues, clics, devis)', included: true },
-      { text: 'Badge "Pro vérifié"', included: true },
     ],
     cta: 'Passer en Pro',
   },
@@ -78,7 +75,6 @@ const TIERS: TierConfig[] = [
       { text: 'FAQ dédiée', included: true },
       { text: 'Promo banner / offres ponctuelles', included: true },
       { text: 'Multi-établissements', included: true },
-      { text: 'Export CSV avis & devis', included: true },
       { text: 'Support prioritaire', included: true },
     ],
     cta: 'Passer en Premium',
@@ -89,7 +85,17 @@ const Pricing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: ownerships = [] } = useGarageOwnership();
-  const { data: garages = [] } = useGarages();
+  const ownedIds = ownerships.map((o) => o.garage_id);
+  // Only the names of the garages this account manages, never the whole table.
+  const { data: garages = [] } = useQuery({
+    queryKey: ['owned-garage-names', ownedIds],
+    enabled: ownedIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('garages').select('id, name').in('id', ownedIds);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const [loading, setLoading] = useState<GarageTier | null>(null);
   const [selectedGarageId, setSelectedGarageId] = useState<string>('');
 
@@ -108,7 +114,7 @@ const Pricing = () => {
     }
     if (!targetGarageId) {
       toast.error("Vous devez d'abord revendiquer un garage");
-      navigate('/pro/claim');
+      navigate('/pro/inscription');
       return;
     }
     setLoading(tier);
@@ -130,7 +136,7 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Seo
-        title="Tarifs — SAFEMARQ Pro"
+        title="Tarifs pour les garages"
         description="Pro 39€/mois et Premium 99€/mois. Personnalisez votre fiche : logo, page de couverture, vidéo, équipe."
       />
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
@@ -231,10 +237,10 @@ const Pricing = () => {
             <h2 className="text-base font-bold text-foreground">Notre engagement</h2>
           </div>
           <ul className="space-y-2 text-xs text-foreground/70">
-            <li>✓ <strong>Le SafeScore reste objectif</strong> — calculé uniquement à partir des notes et du volume d'avis.</li>
-            <li>✓ <strong>Pas de boost de classement payant</strong> — un Premium n'apparaît jamais devant un Free mieux noté.</li>
-            <li>✓ <strong>Pas de suppression d'avis</strong> — aucun tier ne permet de cacher des avis négatifs.</li>
-            <li>✓ <strong>Annulation à tout moment</strong> — via le portail Stripe accessible depuis le dashboard.</li>
+            <li>✓ <strong>Le score SafeMarq reste objectif</strong> : calculé uniquement à partir de la note Google et du nombre d'avis.</li>
+            <li>✓ <strong>Pas de boost de classement payant</strong> : un Premium n'apparaît jamais devant un Free mieux noté.</li>
+            <li>✓ <strong>Pas de suppression d'avis</strong> : aucune formule ne permet de cacher des avis négatifs.</li>
+            <li>✓ <strong>Annulation à tout moment</strong> : via le portail Stripe accessible depuis le tableau de bord.</li>
           </ul>
         </section>
       </main>

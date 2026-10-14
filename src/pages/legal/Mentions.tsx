@@ -1,10 +1,10 @@
 import LegalLayout from './LegalLayout';
 
 const Mentions = () => (
-  <LegalLayout title="Mentions légales" description="Mentions légales de SAFEMARQ.">
+  <LegalLayout title="Mentions légales" description="Mentions légales de SafeMarq." updated="2026-10-14">
     <h2>Éditeur du site</h2>
     <p>
-      <strong>SAFEMARQ</strong><br />
+      <strong>SafeMarq</strong><br />
       Plateforme de comparaison de garages automobiles<br />
       Namur, Belgique<br />
       Email : contact@safemarq.be
@@ -14,14 +14,16 @@ const Mentions = () => (
     <p>Le site est hébergé via Lovable Cloud (infrastructure Supabase, Union Européenne).</p>
 
     <h2>Directeur de la publication</h2>
-    <p>Le représentant légal de SAFEMARQ.</p>
+    <p>Le représentant légal de SafeMarq.</p>
 
     <h2>Propriété intellectuelle</h2>
-    <p>L'ensemble du contenu (textes, graphismes, logos, code) est la propriété exclusive de SAFEMARQ, sauf mention contraire. Toute reproduction est interdite sans autorisation préalable.</p>
+    <p>L'ensemble du contenu (textes, graphismes, logos, code) est la propriété exclusive de SafeMarq, sauf mention contraire. Toute reproduction est interdite sans autorisation préalable.</p>
 
     <h2>Crédits</h2>
     <ul>
-      <li>Cartographie : © OpenStreetMap contributors</li>
+      <li>Données cartographiques : © les contributeurs d’OpenStreetMap ; fonds de carte : © CARTO</li>
+      <li>Codes postaux : GeoNames (CC BY 4.0)</li>
+      <li>Photos d’illustration : Unsplash, avec le crédit de chaque photo d’article</li>
       <li>Icônes : Lucide</li>
     </ul>
 

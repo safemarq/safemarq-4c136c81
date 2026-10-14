@@ -5,7 +5,7 @@ import { EQUIPMENT_KINDS, TOOL_BRANDS, brandsOfKind } from './equipment';
 import { MAKES, byLetter, makesFor } from './makes';
 import { TRADES, VEHICLES } from './taxonomy';
 import { parseLocal, readLocalRaw, writeLocal } from './favorites';
-import { safeReturn } from '@/pages/Auth';
+import { safeReturn } from './returnPath';
 import { slugify } from '@/hooks/useBlog';
 import { keepPunctuation } from './typography';
 
@@ -50,6 +50,8 @@ describe('sign-in return path', () => {
     expect(safeReturn('/marques/bmw/namur?tri=distance')).toBe('/marques/bmw/namur?tri=distance');
     expect(safeReturn(null)).toBe('/');
     expect(safeReturn('https://evil.example')).toBe('/');
+    expect(safeReturn('/\t/evil.example')).toBe('/');
+    expect(safeReturn('/\n/evil.example')).toBe('/');
     expect(safeReturn('//evil.example')).toBe('/');
     expect(safeReturn('/\\evil.example')).toBe('/');
     expect(safeReturn('/auth?retour=/auth')).toBe('/');
@@ -86,11 +88,24 @@ describe('blog slugs', () => {
   });
 });
 
-describe('French punctuation', () => {
-  it('keeps : ; ! ? with the preceding word, leaves table syntax alone', () => {
-    expect(keepPunctuation('Belgique : à quoi s’attendre ?')).toBe('Belgique\u00a0: à quoi s’attendre\u00a0?');
-    expect(keepPunctuation('**Prix :** 150 €')).toBe('**Prix\u00a0:** 150 €');
+describe('French typesetting', () => {
+  const nb = (s: string) => s.replace(/_/g, ' ');
+
+  it('keeps : ; ! ? » with the preceding word, leaves table syntax alone', () => {
+    expect(keepPunctuation('Belgique : à quoi s’attendre ?')).toBe(nb('Belgique_: à quoi s’attendre_?'));
+    expect(keepPunctuation('**Prix :** fixe')).toBe(nb('**Prix_:** fixe'));
     expect(keepPunctuation('| :--- | ---: |')).toBe('| :--- | ---: |');
-    expect(keepPunctuation('« garage »')).toBe('«\u00a0garage\u00a0»');
+    expect(keepPunctuation('« garage »')).toBe(nb('«_garage_»'));
+    expect(keepPunctuation('un disque « 60 ».')).toBe(nb('un disque «_60_».'));
+  });
+
+  it('keeps numbers, units and dates together', () => {
+    expect(keepPunctuation('110 000 km, 1 200 € et 40,90 €')).toBe(nb('110_000_km, 1_200_€ et 40,90_€'));
+    expect(keepPunctuation('77 % à 7 °C, 4 mm, 60 km/h')).toBe(nb('77_% à 7_°C, 4_mm, 60_km/h'));
+    expect(keepPunctuation('le 1er octobre et le 31 mars')).toBe(nb('le 1er_octobre et le 31_mars'));
+    expect(keepPunctuation('VoitureBelgique, février 2026')).toBe(nb('VoitureBelgique, février_2026'));
+    // Years and plain counts stay breakable.
+    expect(keepPunctuation('en 2024 2025 fois, 3 kmz')).toBe('en 2024 2025 fois, 3 kmz');
+    expect(keepPunctuation('7 à 10 ans')).toBe('7 à 10 ans');
   });
 });

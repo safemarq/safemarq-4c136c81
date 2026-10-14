@@ -25,7 +25,7 @@ const PRESETS = [
  * "A ranking that cannot be bought": instead of quoting the formula, the
  * visitor moves the rating and the number of reviews and watches the score.
  */
-export function ScoreExplainer() {
+export function ScoreExplainer({ methodLink = true }: { methodLink?: boolean }) {
   const { t, tp, formatNumber } = useI18n();
   const [rating, setRating] = useState(4.6);
   const [reviews, setReviews] = useState(312);
@@ -48,9 +48,11 @@ export function ScoreExplainer() {
           </h2>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-chalk/75">{t('home.scoreLead')}</p>
           <p className="mt-8 max-w-md border-l-2 border-amber pl-4 text-[17px] font-medium leading-relaxed text-chalk">{t('home.simMoney')}</p>
-          <Link to="/about" className="mt-8 inline-flex min-h-[44px] items-center text-[16px] font-semibold text-amber underline-offset-4 hover:underline">
-            {t('home.methodLink')}
-          </Link>
+          {methodLink && (
+            <Link to="/about" className="mt-8 inline-flex min-h-[44px] items-center text-[16px] font-semibold text-amber underline-offset-4 hover:underline">
+              {t('home.methodLink')}
+            </Link>
+          )}
         </div>
 
         <div>

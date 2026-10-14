@@ -1,109 +1,150 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, ShieldCheck, Sparkles, BadgeCheck, MessageSquare, Scale } from 'lucide-react';
+import { BadgeCheck, FileCheck2 } from 'lucide-react';
 import Seo from '@/components/Seo';
-import Footer from '@/components/Footer';
-import BottomNav from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { Breadcrumbs, breadcrumbJsonLd } from '@/components/site/Breadcrumbs';
+import { ScoreExplainer } from '@/components/home/ScoreExplainer';
+import { OfficialTag } from '@/components/ranking/GarageRow';
+import { useI18n } from '@/i18n/I18nProvider';
+import { keepPunctuation } from '@/lib/typography';
+import { cn } from '@/lib/utils';
 
-const PILLARS = [
-  {
-    icon: BadgeCheck,
-    title: 'Avis vérifiés par facture',
-    text: "Les utilisateurs peuvent joindre une facture pour certifier qu'ils ont réellement été clients. Un badge dédié s'affiche sur l'avis.",
-  },
-  {
-    icon: Scale,
-    title: 'Score SAFEMARQ objectif',
-    text: 'Le SAFEMARQ Score combine 60% de la note Google et 40% du volume d\'avis (échelle logarithmique). Un score lisible de 0 à 100.',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Réponse du garagiste',
-    text: "Les garagistes peuvent revendiquer leur fiche et répondre publiquement aux avis pour apporter du contexte.",
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Transparence totale',
-    text: "Pas de classement payant. Pas de mise en avant cachée. Le ranking dépend uniquement du score, de la distance et de vos filtres.",
-  },
-];
+/**
+ * /about, "Méthode": how the score is computed (the same formula as the
+ * database column garages.safemarq_score), what never moves a garage up, and
+ * what the labels on listings mean.
+ */
+export default function About() {
+  const { t } = useI18n();
+  const crumbs = [{ label: t('nav.home'), to: '/' }, { label: t('about.crumb') }];
 
-const About = () => (
-  <div className="min-h-screen bg-background">
-    <Seo
-      title="Notre méthode — Comment nous évaluons les garages"
-      description="Découvrez la méthode SAFEMARQ : avis vérifiés par facture, score objectif, et transparence sur les garages automobiles en Belgique."
-    />
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">Retour</span>
-        </Link>
-      </div>
-    </header>
+  const ingredients = [
+    { points: 60, title: t('about.ratingTitle'), body: t('about.ratingBody') },
+    { points: 40, title: t('about.reviewsTitle'), body: t('about.reviewsBody') },
+  ];
+  const neverCounts = [
+    { title: t('about.notMoneyTitle'), body: t('about.notMoneyBody') },
+    { title: t('about.notAdsTitle'), body: t('about.notAdsBody') },
+    { title: t('about.notOwnReviewsTitle'), body: t('about.notOwnReviewsBody') },
+  ];
 
-    <main className="pt-20 pb-12 max-w-4xl mx-auto px-4">
-      <motion.section
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-3 mb-10"
-      >
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-          <Sparkles className="w-3 h-3" /> Notre méthode
-        </span>
-        <h1 className="text-2xl md:text-4xl font-bold text-foreground">
-          La confiance, ça se mesure.
-        </h1>
-        <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-          SAFEMARQ aide les automobilistes belges à choisir le bon garage en s'appuyant sur des données vérifiables et un score objectif.
-        </p>
-      </motion.section>
+  return (
+    <div className="min-h-screen bg-paper text-ink">
+      <Seo
+        title={t('about.metaTitle')}
+        description={t('about.metaDescription')}
+        canonical="https://safemarq.com/about"
+        jsonLd={breadcrumbJsonLd([
+          { label: t('nav.home'), to: '/' },
+          { label: t('about.crumb'), to: '/about' },
+        ])}
+      />
+      <SiteHeader />
 
-      <section className="grid md:grid-cols-2 gap-3 mb-10">
-        {PILLARS.map((p, i) => (
-          <motion.div
-            key={p.title}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="surface-card p-4"
-          >
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
-              <p.icon className="w-5 h-5 text-primary" />
+      <main id="contenu">
+        <section className="container-editorial pb-14 pt-8 md:pb-20 md:pt-12">
+          <Breadcrumbs items={crumbs} />
+          <h1 className="mt-6 max-w-[17ch] text-[44px] font-semibold leading-[1.02] text-strong [text-wrap:balance] md:text-[72px]">
+            {keepPunctuation(t('about.title'))}
+          </h1>
+          <p className="mt-5 max-w-[58ch] text-[19px] leading-relaxed text-slate1 md:text-[21px]">{keepPunctuation(t('about.lead'))}</p>
+
+          {/* The two ingredients of the score, weighted as in the formula. */}
+          <dl className="mt-12 grid border-t border-line md:mt-16 md:grid-cols-2">
+            {ingredients.map((x, i) => (
+              <div key={x.points} className={cn('border-b border-line py-7 md:py-9', i === 0 ? 'md:border-r md:pr-10' : 'md:pl-10')}>
+                <dt>
+                  <span className="flex items-baseline gap-2">
+                    <span className="font-display text-[64px] font-bold leading-none text-strong num md:text-[80px]">{x.points}</span>
+                    <span className="text-[18px] font-semibold text-slate1">{t('about.pointsUnit')}</span>
+                  </span>
+                  <span className="mt-3 block text-[21px] font-semibold text-ink">{x.title}</span>
+                </dt>
+                <dd className="mt-2 max-w-[46ch] text-[17px] leading-relaxed text-slate1">{keepPunctuation(x.body)}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-7 max-w-[72ch] text-[15px] leading-relaxed text-slate1">
+            <p>{keepPunctuation(t('about.formulaLabel'))}</p>
+            <p className="mt-1 font-semibold text-ink">{t('about.formulaExpr')}</p>
+            <p className="mt-1">{keepPunctuation(t('about.formulaNote'))}</p>
+          </div>
+          <p className="mt-6 max-w-[60ch] border-l-2 border-strong pl-4 text-[18px] font-medium leading-relaxed text-ink">{keepPunctuation(t('about.why'))}</p>
+        </section>
+
+        <ScoreExplainer methodLink={false} />
+
+        <section className="container-editorial grid gap-14 py-16 md:grid-cols-2 md:gap-16 md:py-24">
+          <div>
+            <h2 className="text-[30px] font-semibold leading-tight text-strong md:text-[40px]">{keepPunctuation(t('about.notTitle'))}</h2>
+            <ul className="mt-6 divide-y divide-line border-y border-line">
+              {neverCounts.map((x) => (
+                <li key={x.title} className="py-5">
+                  <p className="text-[18px] font-semibold text-ink">{x.title}</p>
+                  <p className="mt-1 text-[16px] leading-relaxed text-slate1">{keepPunctuation(x.body)}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-[16px] leading-relaxed text-slate1">{keepPunctuation(t('about.tie'))}</p>
+          </div>
+
+          <div>
+            <h2 className="text-[30px] font-semibold leading-tight text-strong md:text-[40px]">{keepPunctuation(t('about.marksTitle'))}</h2>
+            {/* Each label exactly as it appears on listings and reviews. */}
+            <dl className="mt-6 divide-y divide-line border-y border-line">
+              <div className="py-5">
+                <dt className="inline-flex items-center gap-1.5 text-[16px] font-semibold text-teal">
+                  <BadgeCheck className="h-4 w-4" aria-hidden />
+                  {t('ranking.verified')}
+                </dt>
+                <dd className="mt-2 text-[16px] leading-relaxed text-slate1">{keepPunctuation(t('about.markVerifiedBody'))}</dd>
+              </div>
+              <div className="py-5">
+                <dt>
+                  <OfficialTag label={t('about.markOfficial')} />
+                </dt>
+                <dd className="mt-2 text-[16px] leading-relaxed text-slate1">{keepPunctuation(t('about.markOfficialBody'))}</dd>
+              </div>
+              <div className="py-5">
+                <dt className="inline-flex items-center gap-1 text-[16px] font-semibold text-teal">
+                  <FileCheck2 className="h-4 w-4" aria-hidden />
+                  {t('reviews.verified')}
+                </dt>
+                <dd className="mt-2 text-[16px] leading-relaxed text-slate1">{keepPunctuation(t('about.markInvoiceBody'))}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section className="container-editorial pb-16 md:pb-24">
+          <div className="grid gap-6 border-t border-line pt-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12">
+            <div>
+              <h2 className="text-[28px] font-semibold leading-tight text-strong md:text-[34px]">{keepPunctuation(t('about.prosTitle'))}</h2>
+              <p className="mt-2 max-w-[60ch] text-[17px] leading-relaxed text-slate1">{keepPunctuation(t('about.prosBody'))}</p>
             </div>
-            <h3 className="text-sm font-bold text-foreground mb-1">{p.title}</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">{p.text}</p>
-          </motion.div>
-        ))}
-      </section>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link to="/pro" className="btn-ghost-navy min-h-[48px] px-5">
+                {t('footer.proSpace')}
+              </Link>
+              <Link to="/pricing" className="inline-flex min-h-[44px] items-center text-[16px] font-semibold text-strong underline underline-offset-4 hover:decoration-2">
+                {t('footer.businessModel')}
+              </Link>
+            </div>
+          </div>
 
-      <section className="surface-card p-5 mb-10">
-        <h2 className="text-base font-bold text-foreground mb-2">Comment se calcule le SAFEMARQ Score ?</h2>
-        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-          Notre formule équilibre la qualité perçue et la fiabilité statistique :
-        </p>
-        <div className="bg-secondary/40 rounded-xl p-3 font-mono text-xs text-foreground/80">
-          Score = (Note × 20) × 0.6 + min(log₁₀(avis + 1) × 25, 100) × 0.4
-        </div>
-        <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-          Un garage avec une note de 4.8 mais seulement 3 avis aura un score plus mesuré qu'un garage à 4.5 avec 200 avis : la fiabilité du signal compte autant que la note brute.
-        </p>
-      </section>
+          <div className="relative mt-14 overflow-hidden rounded-2xl bg-navy-900 p-6 text-chalk md:p-10">
+            <span aria-hidden className="absolute bottom-0 right-0 h-5 w-5 bg-amber" />
+            <h2 className="text-[28px] font-semibold leading-tight text-chalk md:text-[34px]">{t('blog.ctaTitle')}</h2>
+            <p className="mt-2 max-w-xl text-[16px] leading-relaxed text-chalk/75">{keepPunctuation(t('blog.ctaBody'))}</p>
+            <Link to="/recherche" className="btn-amber mt-6 min-h-[48px] px-6">
+              {t('blog.ctaButton')}
+            </Link>
+          </div>
+        </section>
+      </main>
 
-      <section className="text-center surface-card p-5">
-        <h2 className="text-base font-bold text-foreground mb-1">Vous êtes garagiste ?</h2>
-        <p className="text-xs text-muted-foreground mb-3">Revendiquez gratuitement votre fiche pour répondre aux avis et recevoir des demandes de devis.</p>
-        <Link to="/pro">
-          <Button>Espace pros</Button>
-        </Link>
-      </section>
-    </main>
-
-    <Footer />
-    <BottomNav />
-  </div>
-);
-
-export default About;
+      <SiteFooter />
+    </div>
+  );
+}

@@ -1,9 +1,17 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard
-Disallow: /profile
-Disallow: /favorites
-Disallow: /vehicles
+Disallow: /admin
 Disallow: /auth
+Disallow: /profile
+Disallow: /vehicles
+Disallow: /favoris
+Disallow: /favorites
+Disallow: /recherche
+Disallow: /dashboard
+Disallow: /pro/dashboard
+Disallow: /pro/connexion
+Disallow: /pro/nouveau-mot-de-passe
+Disallow: /nouveau-mot-de-passe
+Disallow: /billing/
 
-Sitemap: /sitemap.xml
+Sitemap: https://safemarq.com/sitemap.xml

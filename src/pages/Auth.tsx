@@ -14,6 +14,7 @@ import { PasswordInput, TermsNotice, authErrorKey } from '@/components/auth/shar
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/i18n/I18nProvider';
+import { safeReturn } from '@/lib/returnPath';
 import type { MessageKey } from '@/i18n/types';
 import { emailSchema, passwordSchema } from '@/lib/pro/validation';
 import { cn } from '@/lib/utils';
@@ -23,12 +24,6 @@ type Mode = 'signin' | 'signup';
 const signInSchema = z.object({ email: emailSchema, password: z.string().min(1, { message: 'validation.required' }) });
 const signUpSchema = z.object({ email: emailSchema, password: passwordSchema });
 type Values = z.infer<typeof signUpSchema>;
-
-/** Only paths on this site, never "//evil.com" or "/auth" itself (no open redirect, no loop). */
-export function safeReturn(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\') || value.startsWith('/auth')) return '/';
-  return value.slice(0, 200);
-}
 
 /** /auth: sign in or create a free account (favourites everywhere, quotes followed). */
 export default function Auth() {

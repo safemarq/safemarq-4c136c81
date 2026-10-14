@@ -325,13 +325,13 @@ function PromoBanner({ banner }: { banner: NonNullable<Garage['promoBanner']> })
 
 /** Content paid listings can add (services, video, team, certifications, FAQ). */
 function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: boolean; isPremium: boolean }) {
-  const { formatNumber } = useI18n();
+  const { t, formatNumber } = useI18n();
   const video = isPremium && garage.videoUrl ? safeEmbed(garage.videoUrl) : null;
   return (
     <>
       {isPro && garage.servicesDetail.length > 0 && (
         <section className="mt-8 border-t border-line pt-7">
-          <h2 className="font-display text-[22px] font-semibold text-strong">Services et tarifs indicatifs</h2>
+          <h2 className="font-display text-[22px] font-semibold text-strong">{t('garage.premium.servicesTitle')}</h2>
           <ul className="mt-3 divide-y divide-line">
             {garage.servicesDetail.map((s, i) => (
               <li key={i} className="flex items-start justify-between gap-4 py-3">
@@ -340,7 +340,9 @@ function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: 
                   {s.description && <p className="mt-0.5 text-[14px] text-slate1">{s.description}</p>}
                 </div>
                 {typeof s.price_from === 'number' && (
-                  <span className="shrink-0 text-[15px] font-semibold text-strong">à partir de {formatNumber(s.price_from, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}</span>
+                  <span className="shrink-0 text-[15px] font-semibold text-strong">
+                    {t('garage.premium.priceFrom', { price: formatNumber(s.price_from, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }) })}
+                  </span>
                 )}
               </li>
             ))}
@@ -349,7 +351,7 @@ function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: 
       )}
       {video && (
         <section className="mt-8 border-t border-line pt-7">
-          <h2 className="font-display text-[22px] font-semibold text-strong">Vidéo de présentation</h2>
+          <h2 className="font-display text-[22px] font-semibold text-strong">{t('garage.premium.videoTitle')}</h2>
           <div className="mt-3 aspect-video overflow-hidden rounded-xl">
             <iframe
               src={video}
@@ -365,7 +367,7 @@ function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: 
       )}
       {isPremium && garage.team.length > 0 && (
         <section className="mt-8 border-t border-line pt-7">
-          <h2 className="font-display text-[22px] font-semibold text-strong">L’équipe</h2>
+          <h2 className="font-display text-[22px] font-semibold text-strong">{t('garage.premium.teamTitle')}</h2>
           <ul className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3">
             {garage.team.map((m, i) => (
               <li key={i}>
@@ -379,7 +381,7 @@ function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: 
       )}
       {isPremium && garage.certifications.length > 0 && (
         <section className="mt-8 border-t border-line pt-7">
-          <h2 className="font-display text-[22px] font-semibold text-strong">Certifications</h2>
+          <h2 className="font-display text-[22px] font-semibold text-strong">{t('garage.premium.certificationsTitle')}</h2>
           <ul className="mt-3 flex flex-wrap gap-2">
             {garage.certifications.map((c, i) => (
               <li key={i} className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-[14px] font-semibold text-ink">
@@ -393,7 +395,7 @@ function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: 
       {isPremium && garage.faq.length > 0 && (
         <section className="mt-8 border-t border-line pt-7">
           <h2 className="flex items-center gap-2 font-display text-[22px] font-semibold text-strong">
-            <HelpCircle className="h-5 w-5" aria-hidden /> FAQ
+            <HelpCircle className="h-5 w-5" aria-hidden /> {t('garage.premium.faqTitle')}
           </h2>
           <div className="mt-3 divide-y divide-line border-y border-line">
             {garage.faq.map((q, i) => (
