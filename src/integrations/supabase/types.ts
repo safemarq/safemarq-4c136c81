@@ -251,6 +251,13 @@ export type Database = {
             referencedRelation: "garages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "garage_services_vehicle_trade_fkey"
+            columns: ["vehicle", "trade"]
+            isOneToOne: false
+            referencedRelation: "vehicle_trades"
+            referencedColumns: ["vehicle", "trade"]
+          },
         ]
       }
       garage_submissions: {
@@ -318,6 +325,53 @@ export type Database = {
           },
         ]
       }
+      garage_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          garage_id: string
+          id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["garage_tier"]
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          garage_id: string
+          id?: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier: Database["public"]["Enums"]["garage_tier"]
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          garage_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["garage_tier"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garage_subscriptions_garage_id_fkey"
+            columns: ["garage_id"]
+            isOneToOne: true
+            referencedRelation: "garages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       garages: {
         Row: {
           address: string
@@ -335,7 +389,7 @@ export type Database = {
           insight_icon: string | null
           key_insight: string | null
           locality: string | null
-          location: unknown | null
+          location: unknown
           location_precise: boolean
           logo_url: string | null
           long_description: string | null
@@ -377,7 +431,7 @@ export type Database = {
           insight_icon?: string | null
           key_insight?: string | null
           locality?: string | null
-          location?: unknown | null
+          location?: unknown
           location_precise?: boolean
           logo_url?: string | null
           long_description?: string | null
@@ -390,7 +444,7 @@ export type Database = {
           quote?: string | null
           rating?: number
           reviews_count?: number
-          safemarq_score?: never
+          safemarq_score?: number | null
           services_detail?: Json
           slug: string
           specialty?: string | null
@@ -419,7 +473,7 @@ export type Database = {
           insight_icon?: string | null
           key_insight?: string | null
           locality?: string | null
-          location?: unknown | null
+          location?: unknown
           location_precise?: boolean
           logo_url?: string | null
           long_description?: string | null
@@ -432,7 +486,7 @@ export type Database = {
           quote?: string | null
           rating?: number
           reviews_count?: number
-          safemarq_score?: never
+          safemarq_score?: number | null
           services_detail?: Json
           slug?: string
           specialty?: string | null
@@ -880,7 +934,22 @@ export type Database = {
           trade?: string
           vehicle?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_trades_trade_fkey"
+            columns: ["trade"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "vehicle_trades_vehicle_fkey"
+            columns: ["vehicle"]
+            isOneToOne: false
+            referencedRelation: "vehicle_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
     }
     Views: {
@@ -888,7 +957,7 @@ export type Database = {
     }
     Functions: {
       approve_garage_submission: {
-        Args: { p_note?: string | null; p_submission_id: string }
+        Args: { p_note?: string; p_submission_id: string }
         Returns: string
       }
       delete_email: {
@@ -900,7 +969,22 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      is_valid_bce: { Args: { n: string }; Returns: boolean }
+      garage_has_tier: {
+        Args: {
+          _garage_id: string
+          _required: Database["public"]["Enums"]["garage_tier"]
+        }
+        Returns: boolean
+      }
+      get_admin_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          role: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -908,6 +992,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_valid_bce: { Args: { n: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -925,54 +1010,6 @@ export type Database = {
           read_ct: number
         }[]
       }
-      search_garages: {
-        Args: {
-          p_lat: number
-          p_limit?: number
-          p_lng: number
-          p_offset?: number
-          p_radius_km?: number
-          p_sort?: string
-          p_trade?: string | null
-          p_vehicle?: string
-          p_verified_only?: boolean
-        }
-        Returns: {
-          address: string
-          brand: string | null
-          cover_image_url: string | null
-          distance_km: number
-          id: string
-          lat: number
-          lng: number
-          locality: string | null
-          location_precise: boolean
-          logo_url: string | null
-          name: string
-          postal_code: string | null
-          rating: number
-          reviews_count: number
-          safemarq_score: number
-          slug: string
-          tier: Database["public"]["Enums"]["garage_tier"]
-          total_count: number
-          type: string
-          verified: boolean
-        }[]
-      }
-      suggest_garages: {
-        Args: { p_lat?: number | null; p_limit?: number; p_lng?: number | null; q: string }
-        Returns: {
-          distance_km: number | null
-          id: string
-          locality: string | null
-          name: string
-          postal_code: string | null
-          safemarq_score: number
-          slug: string
-          verified: boolean
-        }[]
-      }
       search_claimable_garages: {
         Args: { q: string }
         Returns: {
@@ -983,21 +1020,77 @@ export type Database = {
           slug: string
         }[]
       }
-      trade_label_fr: { Args: { slug: string }; Returns: string }
+      search_garages: {
+        Args: {
+          p_lat: number
+          p_limit?: number
+          p_lng: number
+          p_offset?: number
+          p_radius_km?: number
+          p_sort?: string
+          p_trade?: string
+          p_vehicle?: string
+          p_verified_only?: boolean
+        }
+        Returns: {
+          address: string
+          brand: string
+          cover_image_url: string
+          distance_km: number
+          id: string
+          lat: number
+          lng: number
+          locality: string
+          location_precise: boolean
+          logo_url: string
+          name: string
+          postal_code: string
+          rating: number
+          reviews_count: number
+          safemarq_score: number
+          slug: string
+          tier: Database["public"]["Enums"]["garage_tier"]
+          total_count: number
+          type: string
+          verified: boolean
+        }[]
+      }
       submit_pro_onboarding: {
         Args: {
-          p_account?: Json | null
-          p_claim_garage_id?: string | null
-          p_new_garage?: Json | null
+          p_account?: Json
+          p_claim_garage_id?: string
+          p_new_garage?: Json
         }
         Returns: undefined
       }
+      suggest_garages: {
+        Args: { p_lat?: number; p_limit?: number; p_lng?: number; q: string }
+        Returns: {
+          distance_km: number
+          id: string
+          locality: string
+          name: string
+          postal_code: string
+          safemarq_score: number
+          slug: string
+          verified: boolean
+        }[]
+      }
+      trade_label_fr: { Args: { slug: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "garage_owner"
       garage_tier: "free" | "pro" | "premium"
       kyc_status: "pending" | "needs_info" | "approved" | "rejected"
       pro_account_type: "independent_garage" | "dealer"
+      subscription_status:
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "incomplete"
+        | "trialing"
+        | "unpaid"
+        | "incomplete_expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1013,12 +1106,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1042,11 +1135,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1067,11 +1160,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1092,11 +1185,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1109,11 +1202,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1129,6 +1222,15 @@ export const Constants = {
       garage_tier: ["free", "pro", "premium"],
       kyc_status: ["pending", "needs_info", "approved", "rejected"],
       pro_account_type: ["independent_garage", "dealer"],
+      subscription_status: [
+        "active",
+        "past_due",
+        "canceled",
+        "incomplete",
+        "trialing",
+        "unpaid",
+        "incomplete_expired",
+      ],
     },
   },
 } as const
