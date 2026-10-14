@@ -10,7 +10,75 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { useAdminGarages, useToggleGarageVerified, useUpdateGarage, type AdminGarage } from '@/hooks/useAdmin';
+import { useGarageCatalog, useSetOfficial, useToggleCatalogItem } from '@/hooks/useCatalog';
+import { MAKES, getMake } from '@/lib/makes';
+import { toast } from 'sonner';
+
+/** Makes declared by the establishment; only SafeMarq can confirm an official dealership. */
+const GarageMakesAdmin = ({ garageId }: { garageId: string }) => {
+  const { data, isLoading } = useGarageCatalog(garageId);
+  const setOfficial = useSetOfficial(garageId);
+  const toggle = useToggleCatalogItem(garageId);
+  const [adding, setAdding] = useState('');
+  const makes = data?.makes ?? [];
+
+  const add = () => {
+    const make = MAKES.find((m) => m.slug === adding || m.name.toLowerCase() === adding.trim().toLowerCase());
+    if (!make) return toast.error('Marque inconnue');
+    toggle.mutate(
+      { kind: 'make', slug: make.slug, on: true },
+      { onSuccess: () => setAdding(''), onError: () => toast.error("Ajout impossible") },
+    );
+  };
+
+  return (
+    <div className="space-y-2 border-t border-border pt-3">
+      <p className="text-xs font-semibold text-muted-foreground">Marques et concessions officielles</p>
+      {isLoading ? (
+        <Skeleton className="h-10 rounded-xl" />
+      ) : makes.length === 0 ? (
+        <p className="text-xs text-muted-foreground">Aucune marque déclarée.</p>
+      ) : (
+        <ul className="space-y-1.5">
+          {makes.map((m) => (
+            <li key={m.make} className="flex items-center justify-between gap-3 text-sm">
+              <span>{getMake(m.make)?.name ?? m.make}</span>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                Officielle
+                <Switch
+                  checked={m.official}
+                  disabled={setOfficial.isPending}
+                  onCheckedChange={(official) =>
+                    setOfficial.mutate({ make: m.make, official }, { onError: () => toast.error('Mise à jour impossible') })
+                  }
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <input
+          list={`makes-${garageId}`}
+          value={adding}
+          onChange={(e) => setAdding(e.target.value)}
+          placeholder="Ajouter une marque"
+          className="flex-1 px-3 py-2 rounded-xl bg-card border border-border text-sm text-foreground outline-none focus:border-primary/50"
+        />
+        <datalist id={`makes-${garageId}`}>
+          {MAKES.map((m) => (
+            <option key={m.slug} value={m.name} />
+          ))}
+        </datalist>
+        <Button size="sm" variant="outline" onClick={add} disabled={!adding.trim() || toggle.isPending}>
+          Ajouter
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const EditGarageDialog = ({ garage, onClose }: { garage: AdminGarage; onClose: () => void }) => {
   const [name, setName] = useState(garage.name);
@@ -55,6 +123,7 @@ const EditGarageDialog = ({ garage, onClose }: { garage: AdminGarage; onClose: (
             className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm text-foreground outline-none focus:border-primary/50 transition-colors"
           />
         </div>
+        <GarageMakesAdmin garageId={garage.id} />
       </div>
       <DialogFooter>
         <Button variant="outline" size="sm" onClick={onClose}>Annuler</Button>

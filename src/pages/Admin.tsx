@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, ArrowLeft, LayoutDashboard, FileCheck, MessageSquare, Building2, Users, Bell, BadgeCheck } from 'lucide-react';
+import { Shield, ArrowLeft, LayoutDashboard, FileCheck, MessageSquare, Building2, Users, Bell, BadgeCheck, Newspaper } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin, useAdminStats } from '@/hooks/useAdmin';
@@ -11,6 +11,7 @@ import AdminReviews from '@/components/admin/AdminReviews';
 import AdminGarages from '@/components/admin/AdminGarages';
 import AdminUsers from '@/components/admin/AdminUsers';
 import AdminPros from '@/components/admin/AdminPros';
+import AdminBlog from '@/components/admin/AdminBlog';
 import { useAdminPendingProCount } from '@/hooks/useAdminPros';
 import { toast } from 'sonner';
 
@@ -79,7 +80,7 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue={pendingPros > 0 ? 'pros' : pendingClaims > 0 ? 'claims' : 'overview'}>
-            <TabsList className="w-full grid grid-cols-6 h-auto">
+            <TabsList className="w-full grid grid-cols-7 h-auto">
               <TabsTrigger value="pros" className="text-xs py-2 flex gap-1.5 items-center relative">
                 <BadgeCheck className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Comptes pro</span>
@@ -113,6 +114,10 @@ const Admin = () => {
               <TabsTrigger value="users" className="text-xs py-2 flex gap-1.5 items-center">
                 <Users className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Utilisateurs</span>
+              </TabsTrigger>
+              <TabsTrigger value="blog" className="text-xs py-2 flex gap-1.5 items-center">
+                <Newspaper className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Blog</span>
               </TabsTrigger>
             </TabsList>
 
@@ -150,6 +155,10 @@ const Admin = () => {
 
             <TabsContent value="users" className="mt-4">
               <AdminUsers />
+            </TabsContent>
+
+            <TabsContent value="blog" className="mt-4">
+              <AdminBlog />
             </TabsContent>
           </Tabs>
         </motion.div>

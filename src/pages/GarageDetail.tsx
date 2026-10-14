@@ -1,328 +1,436 @@
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Star, BadgeCheck, MapPin, Phone, Globe, ShieldCheck, FileText, Car, Bike, Truck, Zap, BatteryCharging, CheckCircle2, Crown, Sparkles, Award, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import BookingForm from '@/components/garage/BookingForm';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { Award, BadgeCheck, Crown, ExternalLink, Globe, HelpCircle, MapPin, Phone, Sparkles } from 'lucide-react';
+import Seo from '@/components/Seo';
+import SiteHeader from '@/components/site/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
+import { Breadcrumbs, breadcrumbJsonLd } from '@/components/site/Breadcrumbs';
+import { ScoreBadge } from '@/components/site/ScoreBadge';
+import { Stars } from '@/components/ranking/GarageRow';
+import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 import GarageGallery from '@/components/garage/GarageGallery';
 import GarageHours from '@/components/garage/GarageHours';
 import GarageMap from '@/components/garage/GarageMap';
 import GarageReviews from '@/components/garage/GarageReviews';
-import QuoteModal from '@/components/QuoteModal';
-import Seo from '@/components/Seo';
-import { useGarage, calculateSAFEMARQScore } from '@/hooks/useGarages';
-import { useGarageHasOwner } from '@/hooks/useGarageClaims';
-import FavoriteButton from '@/components/FavoriteButton';
+import { GarageCatalog } from '@/components/garage/GarageCatalog';
+import { QuoteDialog } from '@/components/garage/QuoteDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGarage, calculateSAFEMARQScore, type Garage } from '@/hooks/useGarages';
+import { useGarageHasOwner } from '@/hooks/useGarageClaims';
+import { useI18n } from '@/i18n/I18nProvider';
+import { vehicleHref } from '@/lib/links';
 
+const ORIGIN = 'https://safemarq.com';
+
+/** Only http(s) links leave the site: a listing's website field is free text. */
+const safeUrl = (url: string): string | null => {
+  try {
+    const u = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
+  } catch {
+    return null;
+  }
+};
+
+/** /garage/:id (id is the slug) */
 const GarageDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [quoteOpen, setQuoteOpen] = useState(false);
+  const { t } = useI18n();
   const { data: garage, isLoading } = useGarage(id || '');
-  const { data: hasOwner } = useGarageHasOwner(garage?.id);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pt-14 px-4">
-        <Skeleton className="h-64 rounded-2xl mb-4" />
-        <Skeleton className="h-8 w-2/3 mb-2" />
-        <Skeleton className="h-4 w-1/2" />
-      </div>
+      <Shell>
+        <div className="space-y-4 py-10" aria-busy>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-14 w-2/3" />
+          <Skeleton className="h-40 rounded-2xl" />
+        </div>
+      </Shell>
     );
   }
 
   if (!garage) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-lg font-semibold text-foreground">Garage non trouvé</p>
-          <Link to="/">
-            <Button variant="outline">Retour à l'accueil</Button>
+      <Shell>
+        <Seo title={t('garage.notFoundTitle')} noindex />
+        <div className="max-w-xl py-20">
+          <h1 className="text-[40px] font-semibold leading-tight text-strong">{t('garage.notFoundTitle')}</h1>
+          <p className="mt-3 text-[17px] text-slate1">{t('garage.notFoundBody')}</p>
+          <Link to="/recherche" className="btn-ghost-navy mt-6 min-h-[48px] px-5">
+            {t('favorites.emptyCta')}
           </Link>
         </div>
-      </div>
+      </Shell>
     );
   }
+
+  return <GarageView garage={garage} />;
+};
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-paper text-ink">
+      <SiteHeader />
+      <main id="contenu" className="container-editorial">
+        {children}
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+function GarageView({ garage }: { garage: Garage }) {
+  const { t, tp, formatNumber } = useI18n();
+  const { hash } = useLocation();
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const { data: acceptsQuotes, isLoading: checkingQuotes } = useGarageHasOwner(garage.id);
+
+  // Rankings link to /garage/:slug#devis: open the quote form straight away.
+  useEffect(() => {
+    if (hash === '#devis' && acceptsQuotes) setQuoteOpen(true);
+  }, [hash, acceptsQuotes]);
 
   const score = calculateSAFEMARQScore(garage.rating, garage.reviews);
   const isPro = garage.tier === 'pro' || garage.tier === 'premium';
   const isPremium = garage.tier === 'premium';
+  const website = garage.website ? safeUrl(garage.website) : null;
+  const phoneHref = garage.phone ? `tel:${garage.phone.replace(/[^\d+]/g, '')}` : null;
+  const hasCoords = !!garage.coords && (garage.coords.lat !== 0 || garage.coords.lng !== 0);
+  const cover = isPro && garage.coverImageUrl ? [garage.coverImageUrl] : garage.images.filter(Boolean);
+  const crumbs = [
+    { label: t('nav.home'), to: '/' },
+    { label: t('nav.garages'), to: vehicleHref('voiture') },
+    { label: garage.name, to: `/garage/${garage.slug}` },
+  ];
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'AutoRepair',
-    name: garage.name,
-    image: garage.coverImageUrl || garage.images?.[0],
-    address: { '@type': 'PostalAddress', streetAddress: garage.address, addressCountry: 'BE' },
-    telephone: garage.phone,
-    url: garage.website,
-    geo: garage.coords ? { '@type': 'GeoCoordinates', latitude: garage.coords.lat, longitude: garage.coords.lng } : undefined,
-    aggregateRating: garage.reviews > 0 ? {
-      '@type': 'AggregateRating',
-      ratingValue: garage.rating,
-      reviewCount: garage.reviews,
-      bestRating: 5,
-    } : undefined,
-  };
+  // Ratings come from Google: they are shown, not marked up as our own reviews.
+  const jsonLd = [
+    breadcrumbJsonLd(crumbs, ORIGIN),
+    {
+      '@context': 'https://schema.org',
+      '@type': 'AutoRepair',
+      name: garage.name,
+      url: `${ORIGIN}/garage/${garage.slug}`,
+      ...(cover[0] ? { image: cover[0] } : {}),
+      address: { '@type': 'PostalAddress', streetAddress: garage.address, addressCountry: 'BE' },
+      ...(garage.phone ? { telephone: garage.phone } : {}),
+      ...(website ? { sameAs: website } : {}),
+      ...(hasCoords ? { geo: { '@type': 'GeoCoordinates', latitude: garage.coords.lat, longitude: garage.coords.lng } } : {}),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper text-ink">
       <Seo
-        title={`${garage.name} — Avis & devis`}
-        description={`${garage.name} à ${garage.address}. ${garage.reviews} avis · note ${garage.rating}/5. Demandez un devis en ligne.`}
+        title={`${garage.name} : avis et devis`}
+        description={`${garage.name}, ${garage.address}. ${tp('ranking.googleReviews', garage.reviews)}, ${formatNumber(garage.rating, { maximumFractionDigits: 1 })}/5.`}
+        canonical={`${ORIGIN}/garage/${garage.slug}`}
         type="profile"
-        image={garage.coverImageUrl || garage.images?.[0]}
+        image={cover[0]}
         jsonLd={jsonLd}
       />
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Retour</span>
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
 
-      <main className="pt-14 pb-24 md:pb-12">
-        {isPro && garage.coverImageUrl ? (
-          <div className="relative w-full h-48 md:h-72 overflow-hidden">
-            <img src={garage.coverImageUrl} alt={`Couverture ${garage.name}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <main id="contenu" className="pb-20">
+        <div className="container-editorial pt-6 md:pt-8">
+          <Breadcrumbs items={crumbs.map((c, i) => (i === crumbs.length - 1 ? { label: c.label } : c))} />
+        </div>
+
+        {cover.length > 0 && (
+          <div className="container-editorial mt-5">
+            <div className="overflow-hidden rounded-2xl">
+              <GarageGallery images={cover} name={garage.name} />
+            </div>
           </div>
-        ) : (
-          <GarageGallery images={garage.images} name={garage.name} />
         )}
 
-        <div className="max-w-4xl mx-auto px-4 md:px-6">
-          {isPremium && garage.promoBanner && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20"
-            >
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-              <span className="text-xs font-medium text-foreground flex-1">{garage.promoBanner.text}</span>
-              {garage.promoBanner.cta && garage.promoBanner.cta_url && (
-                <a href={garage.promoBanner.cta_url} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="text-[10px] h-6">
-                    {garage.promoBanner.cta}
-                  </Button>
-                </a>
-              )}
-            </motion.div>
-          )}
+        <div className="container-editorial mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14">
+          <div className="min-w-0">
+            {isPremium && garage.promoBanner && <PromoBanner banner={garage.promoBanner} />}
 
-          <motion.div
-            className="py-5 space-y-3"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex gap-3 min-w-0">
+            <header>
+              <div className="flex items-start gap-4">
                 {isPro && garage.logoUrl && (
-                  <img
-                    src={garage.logoUrl}
-                    alt={`Logo ${garage.name}`}
-                    className="w-14 h-14 rounded-xl object-contain border border-border bg-background shrink-0"
-                  />
+                  <img src={garage.logoUrl} alt="" className="h-16 w-16 shrink-0 rounded-xl border border-line bg-card object-contain" />
                 )}
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h1 className="text-xl md:text-2xl font-bold text-foreground">{garage.name}</h1>
-                    {garage.verified && <BadgeCheck className="w-5 h-5 text-primary shrink-0" />}
-                    {isPremium && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-500/15 px-2 py-0.5 rounded-full">
-                        <Crown className="w-3 h-3" /> Premium
+                  <h1 className="text-[36px] font-semibold leading-[1.05] text-strong [overflow-wrap:anywhere] md:text-[52px]">{garage.name}</h1>
+                  <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-slate1">
+                    <span>{garage.type === 'dealer' ? t('favorites.typeDealer') : t('favorites.typeIndependent')}</span>
+                    {garage.specialty && <span>{garage.specialty}</span>}
+                    {garage.priceLevel && <span>{garage.priceLevel}</span>}
+                    {garage.verified && (
+                      <span className="inline-flex items-center gap-1 font-semibold text-teal">
+                        <BadgeCheck className="h-4 w-4" aria-hidden />
+                        {t('ranking.verified')}
                       </span>
                     )}
-                    {garage.tier === 'pro' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        <Sparkles className="w-3 h-3" /> Pro
+                    {isPremium ? (
+                      <span className="inline-flex items-center gap-1 font-semibold text-strong">
+                        <Crown className="h-4 w-4" aria-hidden /> Premium
                       </span>
-                    )}
-                    <FavoriteButton garageId={garage.id} />
-                  </div>
-                  <p className="text-muted-foreground text-sm mt-0.5">{garage.specialty} · {garage.priceLevel}</p>
+                    ) : garage.tier === 'pro' ? (
+                      <span className="inline-flex items-center gap-1 font-semibold text-strong">
+                        <Sparkles className="h-4 w-4" aria-hidden /> Pro
+                      </span>
+                    ) : null}
+                  </p>
                 </div>
               </div>
-              <div className="flex flex-col items-end shrink-0">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="font-mono-data text-xl font-bold text-foreground">{garage.rating}</span>
+
+              <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-line py-5">
+                <ScoreBadge score={score} size="md" />
+                <div>
+                  <p className="flex items-center gap-2 text-[17px] font-semibold text-ink">
+                    {formatNumber(garage.rating, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                    <Stars value={garage.rating} />
+                  </p>
+                  <p className="text-[14px] text-slate1">{tp('ranking.googleReviews', garage.reviews)}</p>
                 </div>
-                <span className="text-xs text-muted-foreground">{garage.reviews} avis</span>
               </div>
+
+              <ul className="mt-5 space-y-2 text-[16px] text-ink">
+                <li className="flex items-start gap-2.5">
+                  <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-slate1" aria-hidden />
+                  <span>{garage.address}</span>
+                </li>
+                {garage.phone && phoneHref && (
+                  <li className="flex items-center gap-2.5">
+                    <Phone className="h-5 w-5 shrink-0 text-slate1" aria-hidden />
+                    <a href={phoneHref} className="font-semibold text-strong underline-offset-4 hover:underline">
+                      {garage.phone}
+                    </a>
+                  </li>
+                )}
+                {website && (
+                  <li className="flex items-center gap-2.5">
+                    <Globe className="h-5 w-5 shrink-0 text-slate1" aria-hidden />
+                    <a href={website} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 font-semibold text-strong underline-offset-4 hover:underline">
+                      {new URL(website).hostname.replace(/^www\./, '')}
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </header>
+
+            {/* Phones: the actions right under the essentials. */}
+            <div className="mt-6 lg:hidden">
+              <QuotePanel garage={garage} accepts={!!acceptsQuotes} loading={checkingQuotes} phoneHref={phoneHref} website={website} onQuote={() => setQuoteOpen(true)} />
             </div>
 
-            <p className="text-sm text-foreground/70 leading-relaxed">{garage.description}</p>
-            {isPro && garage.longDescription && (
-              <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-line">{garage.longDescription}</p>
+            {(garage.description || (isPro && garage.longDescription)) && (
+              <section className="mt-8 max-w-[68ch] space-y-4 text-[17px] leading-relaxed text-ink">
+                {garage.description && <p>{garage.description}</p>}
+                {isPro && garage.longDescription && <p className="whitespace-pre-line">{garage.longDescription}</p>}
+              </section>
             )}
 
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1 text-xs font-bold bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Score: {score}/100
-              </span>
-              {hasOwner && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Fiche revendiquée
-                </span>
-              )}
-              <span className={`text-xs font-medium px-3 py-1 rounded-full border ${
-                garage.type === 'dealer'
-                  ? 'text-[hsl(var(--warning))] border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/10'
-                  : 'text-muted-foreground border-border'
-              }`}>
-                {garage.type === 'dealer' ? 'Concession' : 'Indépendant'}
-              </span>
-              {garage.vehicleTypes.map(vt => {
-                const icons: Record<string, typeof Car> = { voiture: Car, moto: Bike, camion: Truck, trottinette: Zap, velo: BatteryCharging };
-                const VIcon = icons[vt] || Car;
-                return (
-                  <span key={vt} className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground px-3 py-1 rounded-full border border-border capitalize">
-                    <VIcon className="w-3 h-3" /> {vt}
-                  </span>
-                );
-              })}
-              {garage.badges.map(badge => (
-                <span key={badge} className="text-xs font-medium text-muted-foreground px-3 py-1 rounded-full border border-border">
-                  {badge}
-                </span>
-              ))}
+            <div className="mt-8">
+              <GarageCatalog garageId={garage.id} />
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>{garage.address}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5" />
-                <span>{garage.phone}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5" />
-                <span>{garage.website}</span>
-              </div>
-            </div>
+            <PremiumSections garage={garage} isPro={isPro} isPremium={isPremium} />
 
-            <div className="flex gap-3 pt-1">
-              <a href={`tel:${garage.phone}`} className="flex-1">
-                <Button variant="outline" className="w-full">
-                  <Phone className="w-4 h-4" />
-                  Appeler
-                </Button>
-              </a>
-              <Button className="flex-1" onClick={() => setQuoteOpen(true)}>
-                <FileText className="w-4 h-4" />
-                Demander un devis
-              </Button>
-            </div>
-          </motion.div>
-
-          {isPro && garage.servicesDetail.length > 0 && (
-            <section className="surface-card p-4 mb-5">
-              <h2 className="text-sm font-bold text-foreground mb-3">Services & tarifs indicatifs</h2>
-              <ul className="space-y-2">
-                {garage.servicesDetail.map((s, i) => (
-                  <li key={i} className="flex justify-between items-start gap-3 text-xs">
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground">{s.name}</p>
-                      {s.description && <p className="text-muted-foreground mt-0.5">{s.description}</p>}
-                    </div>
-                    {typeof s.price_from === 'number' && (
-                      <span className="shrink-0 text-primary font-bold">À partir de {s.price_from}€</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {isPremium && garage.videoUrl && (
-            <section className="surface-card p-4 mb-5">
-              <h2 className="text-sm font-bold text-foreground mb-3">Vidéo de présentation</h2>
-              <div className="aspect-video rounded-xl overflow-hidden">
-                <iframe
-                  src={garage.videoUrl}
-                  title={`Vidéo ${garage.name}`}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </section>
-          )}
-
-          {isPremium && garage.team.length > 0 && (
-            <section className="surface-card p-4 mb-5">
-              <h2 className="text-sm font-bold text-foreground mb-3">L'équipe</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {garage.team.map((m, i) => (
-                  <div key={i} className="text-center">
-                    {m.photo_url ? (
-                      <img src={m.photo_url} alt={m.name} className="w-16 h-16 rounded-full object-cover mx-auto mb-1.5" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-1.5" />
-                    )}
-                    <p className="text-xs font-semibold text-foreground">{m.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{m.role}</p>
-                    {m.bio && <p className="text-[10px] text-muted-foreground/80 mt-1 leading-tight">{m.bio}</p>}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {isPremium && garage.certifications.length > 0 && (
-            <section className="surface-card p-4 mb-5">
-              <h2 className="text-sm font-bold text-foreground mb-3">Certifications</h2>
-              <div className="flex flex-wrap gap-2">
-                {garage.certifications.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <Award className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-medium text-foreground">{c.name}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {isPremium && garage.faq.length > 0 && (
-            <section className="surface-card p-4 mb-5">
-              <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-primary" /> FAQ
-              </h2>
-              <div className="space-y-3">
-                {garage.faq.map((q, i) => (
-                  <div key={i}>
-                    <p className="text-xs font-semibold text-foreground">{q.question}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{q.answer}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <div className="grid md:grid-cols-5 gap-5 pb-8">
-            <div className="md:col-span-3 space-y-5">
-              <GarageHours hours={garage.hours} />
-              <GarageMap address={garage.address} coords={garage.coords} />
-              <GarageReviews garageId={garage.id} garageName={garage.name} rating={garage.rating} reviewCount={garage.reviews} />
-            </div>
-            <div className="md:col-span-2">
-              <BookingForm garageName={garage.name} />
+            <div className="mt-8 space-y-6">
+              {garage.hours.length > 0 && <GarageHours hours={garage.hours} />}
+              {hasCoords && <GarageMap address={garage.address} coords={garage.coords} />}
+              <GarageReviews garageId={garage.id} garageName={garage.name} />
             </div>
           </div>
+
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <QuotePanel garage={garage} accepts={!!acceptsQuotes} loading={checkingQuotes} phoneHref={phoneHref} website={website} onQuote={() => setQuoteOpen(true)} />
+            </div>
+          </aside>
         </div>
       </main>
 
-      <QuoteModal open={quoteOpen} onClose={() => setQuoteOpen(false)} garageName={garage.name} garageId={garage.id} />
+      <SiteFooter />
+      <QuoteDialog open={quoteOpen} onOpenChange={setQuoteOpen} garageId={garage.id} garageName={garage.name} />
     </div>
   );
-};
+}
+
+/** What to do next: a quote when the garage manages its listing, otherwise its phone. */
+function QuotePanel({
+  garage,
+  accepts,
+  loading,
+  phoneHref,
+  website,
+  onQuote,
+}: {
+  garage: Garage;
+  accepts: boolean;
+  loading: boolean;
+  phoneHref: string | null;
+  website: string | null;
+  onQuote: () => void;
+}) {
+  const { t } = useI18n();
+  if (loading) return <div className="h-48 animate-pulse rounded-2xl bg-paper-2" aria-hidden />;
+  return (
+    <div id="devis" className="scroll-mt-24 rounded-2xl border border-line bg-card p-5 md:p-6">
+      <h2 className="font-display text-[24px] font-semibold leading-tight text-strong">{accepts ? t('garage.quoteTitle') : t('garage.noQuotesTitle')}</h2>
+      <p className="mt-2 text-[15px] leading-relaxed text-slate1">{accepts ? t('garage.quoteBody') : t('garage.noQuotesBody')}</p>
+      <div className="mt-5 grid gap-2">
+        {accepts && (
+          <button type="button" onClick={onQuote} className="btn-amber min-h-[52px] w-full">
+            {t('ranking.requestQuote')}
+          </button>
+        )}
+        {phoneHref && (
+          <a href={phoneHref} className={accepts ? 'btn-ghost-navy min-h-[48px] w-full' : 'btn-amber min-h-[52px] w-full'}>
+            <Phone className="h-4 w-4" aria-hidden />
+            {t('garage.call')}
+          </a>
+        )}
+        {!accepts && website && (
+          <a href={website} target="_blank" rel="noopener noreferrer nofollow" className="btn-ghost-navy min-h-[48px] w-full">
+            <Globe className="h-4 w-4" aria-hidden />
+            {t('garage.website')}
+          </a>
+        )}
+        <FavoriteButton garageId={garage.id} garageName={garage.name} variant="labeled" className="w-full justify-center" />
+      </div>
+      {!accepts && (
+        <p className="mt-5 border-t border-line pt-4 text-[14px] text-slate1">
+          {t('garage.claimPrompt')}{' '}
+          <Link to="/pro/inscription" className="font-semibold text-strong underline underline-offset-4">
+            {t('garage.claimLink')}
+          </Link>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PromoBanner({ banner }: { banner: NonNullable<Garage['promoBanner']> }) {
+  const href = banner.cta_url ? safeUrl(banner.cta_url) : null;
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-paper-2 p-4">
+      <Sparkles className="h-5 w-5 shrink-0 text-strong" aria-hidden />
+      <p className="min-w-0 flex-1 text-[15px] font-semibold text-ink">{banner.text}</p>
+      {banner.cta && href && (
+        <a href={href} target="_blank" rel="noopener noreferrer nofollow" className="btn-ghost-navy min-h-[40px] px-4 text-[14px]">
+          {banner.cta}
+        </a>
+      )}
+    </div>
+  );
+}
+
+/** Content paid listings can add (services, video, team, certifications, FAQ). */
+function PremiumSections({ garage, isPro, isPremium }: { garage: Garage; isPro: boolean; isPremium: boolean }) {
+  const { formatNumber } = useI18n();
+  const video = isPremium && garage.videoUrl ? safeEmbed(garage.videoUrl) : null;
+  return (
+    <>
+      {isPro && garage.servicesDetail.length > 0 && (
+        <section className="mt-8 border-t border-line pt-7">
+          <h2 className="font-display text-[22px] font-semibold text-strong">Services et tarifs indicatifs</h2>
+          <ul className="mt-3 divide-y divide-line">
+            {garage.servicesDetail.map((s, i) => (
+              <li key={i} className="flex items-start justify-between gap-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-[16px] font-semibold text-ink">{s.name}</p>
+                  {s.description && <p className="mt-0.5 text-[14px] text-slate1">{s.description}</p>}
+                </div>
+                {typeof s.price_from === 'number' && (
+                  <span className="shrink-0 text-[15px] font-semibold text-strong">à partir de {formatNumber(s.price_from, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {video && (
+        <section className="mt-8 border-t border-line pt-7">
+          <h2 className="font-display text-[22px] font-semibold text-strong">Vidéo de présentation</h2>
+          <div className="mt-3 aspect-video overflow-hidden rounded-xl">
+            <iframe
+              src={video}
+              title={garage.name}
+              className="h-full w-full"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              allow="encrypted-media; picture-in-picture; fullscreen"
+            />
+          </div>
+        </section>
+      )}
+      {isPremium && garage.team.length > 0 && (
+        <section className="mt-8 border-t border-line pt-7">
+          <h2 className="font-display text-[22px] font-semibold text-strong">L’équipe</h2>
+          <ul className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3">
+            {garage.team.map((m, i) => (
+              <li key={i}>
+                {m.photo_url ? <img src={m.photo_url} alt="" className="h-16 w-16 rounded-full object-cover" /> : <div className="h-16 w-16 rounded-full bg-paper-2" />}
+                <p className="mt-2 text-[15px] font-semibold text-ink">{m.name}</p>
+                <p className="text-[14px] text-slate1">{m.role}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {isPremium && garage.certifications.length > 0 && (
+        <section className="mt-8 border-t border-line pt-7">
+          <h2 className="font-display text-[22px] font-semibold text-strong">Certifications</h2>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {garage.certifications.map((c, i) => (
+              <li key={i} className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-[14px] font-semibold text-ink">
+                <Award className="h-4 w-4 text-strong" aria-hidden />
+                {c.name}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {isPremium && garage.faq.length > 0 && (
+        <section className="mt-8 border-t border-line pt-7">
+          <h2 className="flex items-center gap-2 font-display text-[22px] font-semibold text-strong">
+            <HelpCircle className="h-5 w-5" aria-hidden /> FAQ
+          </h2>
+          <div className="mt-3 divide-y divide-line border-y border-line">
+            {garage.faq.map((q, i) => (
+              <details key={i} className="group py-3">
+                <summary className="cursor-pointer list-none text-[16px] font-semibold text-ink">{q.question}</summary>
+                <p className="mt-2 text-[15px] leading-relaxed text-slate1">{q.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+/** Video embeds from YouTube or Vimeo only (the URL is typed by the garage). */
+function safeEmbed(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, '');
+    if (u.protocol !== 'https:') return null;
+    if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+      const id = u.pathname.startsWith('/embed/') ? u.pathname.split('/')[2] : u.searchParams.get('v');
+      return id && /^[\w-]{6,20}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+    }
+    if (host === 'youtu.be') {
+      const id = u.pathname.slice(1);
+      return /^[\w-]{6,20}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+    }
+    if (host === 'player.vimeo.com' || host === 'vimeo.com') {
+      const id = u.pathname.split('/').filter(Boolean).pop();
+      return id && /^\d{5,12}$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export default GarageDetail;

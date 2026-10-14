@@ -27,6 +27,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatBce, formatPhone } from '@/lib/pro/validation';
 import { LOCALE_META, isLocale } from '@/i18n/config';
 import { useQueryClient } from '@tanstack/react-query';
+import { isTrade, isVehicle } from '@/lib/taxonomy';
+import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
 import { cn } from '@/lib/utils';
 
 type Owned = ProWorkspace['owned'][number];
@@ -175,13 +177,13 @@ function PendingRow({ name, sub, status, note }: { name: string; sub: string; st
 
 // ── Establishment picker (reviews, quotes, plan) ────────────────────────────
 
-function useSelectedGarage(owned: Owned[]) {
+export function useSelectedGarage(owned: Owned[]) {
   const [id, setId] = useState(owned[0]?.garage.id);
   const current = owned.find((o) => o.garage.id === id) ?? owned[0];
   return { current, setId };
 }
 
-function GaragePicker({ owned, value, onChange }: { owned: Owned[]; value: string | undefined; onChange: (id: string) => void }) {
+export function GaragePicker({ owned, value, onChange }: { owned: Owned[]; value: string | undefined; onChange: (id: string) => void }) {
   if (owned.length < 2) return null;
   return (
     <select
@@ -367,6 +369,13 @@ const QUOTE_TONE: Record<QuoteStatus, string> = {
 
 function QuoteItem({ quote }: { quote: OwnerQuote }) {
   const { t, dateFnsLocale } = useI18n();
+  const vehicle = isVehicle(quote.vehicle_type) ? quote.vehicle_type : null;
+  const vehicleLabel = vehicle ? t(vehicleKey(vehicle, 'short')) : quote.vehicle_type;
+  const serviceLabel = isTrade(quote.service_type)
+    ? t(tradeLabelKey(quote.service_type, vehicle ?? undefined))
+    : quote.service_type === 'autre'
+      ? t('pro.dashboard.quoteOther')
+      : quote.service_type;
   const update = useUpdateQuoteStatus();
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState<QuoteStatus | null>(null);
@@ -393,18 +402,41 @@ function QuoteItem({ quote }: { quote: OwnerQuote }) {
     <li className="rounded-2xl border border-line bg-card p-4 md:p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold capitalize text-ink">
-            {quote.service_type} · {quote.vehicle_type}
-            {isNew && <span className="ml-2 rounded bg-amber px-1.5 py-0.5 align-middle text-[11px] font-bold normal-case text-amber-d">{t('pro.dashboard.quoteNew')}</span>}
+          <p className="text-[15px] font-semibold text-ink">
+            {serviceLabel}
+            <span className="font-normal text-slate1"> ({vehicleLabel})</span>
+            {isNew && <span className="ml-2 rounded bg-amber px-1.5 py-0.5 align-middle text-[11px] font-bold text-amber-d">{t('pro.dashboard.quoteNew')}</span>}
           </p>
-          <p className="mt-0.5 text-sm text-slate1">
-            {t('pro.dashboard.quotePlate')} <span className="num font-semibold text-ink">{quote.plate}</span> ·{' '}
-            {formatDistanceToNow(new Date(quote.created_at), { addSuffix: true, locale: dateFnsLocale })}
+          <p className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-slate1">
+            {quote.plate && (
+              <span>
+                {t('pro.dashboard.quotePlate')} <span className="num font-semibold text-ink">{quote.plate}</span>
+              </span>
+            )}
+            <span>{formatDistanceToNow(new Date(quote.created_at), { addSuffix: true, locale: dateFnsLocale })}</span>
           </p>
         </div>
         <span className={cn('shrink-0 rounded-md px-2 py-0.5 text-[13px] font-semibold', QUOTE_TONE[quote.status])}>{t(`pro.dashboard.quoteStatus.${quote.status}`)}</span>
       </div>
       <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">{quote.description}</p>
+      {(quote.contact_email || quote.contact_phone) && (
+        <div className="mt-4 rounded-xl bg-paper-2 px-4 py-3 text-[15px]">
+          <p className="text-[13px] font-semibold text-slate1">{t('pro.dashboard.quoteContact')}</p>
+          {quote.contact_name && <p className="mt-0.5 font-semibold text-ink">{quote.contact_name}</p>}
+          <p className="mt-0.5 flex flex-wrap gap-x-4 gap-y-1">
+            {quote.contact_phone && (
+              <a href={`tel:${quote.contact_phone.replace(/[^\d+]/g, '')}`} className="font-semibold text-strong underline underline-offset-4">
+                {quote.contact_phone}
+              </a>
+            )}
+            {quote.contact_email && (
+              <a href={`mailto:${quote.contact_email}`} className="font-semibold text-strong underline underline-offset-4 [overflow-wrap:anywhere]">
+                {quote.contact_email}
+              </a>
+            )}
+          </p>
+        </div>
+      )}
 
       {(quote.status === 'pending' || quote.status === 'accepted') && (
         <div className="mt-4 flex flex-wrap gap-2">

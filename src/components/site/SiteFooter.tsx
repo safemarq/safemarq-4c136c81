@@ -27,10 +27,13 @@ export default function SiteFooter({ className }: { className?: string }) {
       links: VEHICLES.filter((v) => v !== 'voiture').map((v) => ({ label: t(vehicleKey(v, 'label')), to: vehicleHref(v) })),
     },
     {
-      title: t('footer.trust'),
+      title: t('footer.resources'),
       links: [
+        { label: t('footer.makes'), to: '/marques' },
+        { label: t('footer.equipment'), to: '/outillage' },
+        { label: t('footer.guides'), to: '/blog' },
         { label: t('footer.scoreMethod'), to: '/about' },
-        { label: t('footer.businessModel'), to: '/about' },
+        { label: t('footer.businessModel'), to: '/pricing' },
       ],
     },
     {

@@ -59,12 +59,10 @@ export function useGarageHasOwner(garageId: string | undefined) {
     queryKey: ['garage-has-owner', garageId],
     enabled: !!garageId,
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from('garage_owners')
-        .select('*', { count: 'exact', head: true })
-        .eq('garage_id', garageId!);
+      // garage_owners is private (RLS); this function only answers yes or no.
+      const { data, error } = await supabase.rpc('garage_accepts_quotes', { p_garage: garageId as string });
       if (error) throw error;
-      return (count ?? 0) > 0;
+      return data === true;
     },
   });
 }

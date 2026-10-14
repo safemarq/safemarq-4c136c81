@@ -1,6 +1,7 @@
 // Generates the SQL that mirrors the site's taxonomy and postal code list.
 //   node --experimental-strip-types scripts/gen-sql.mjs taxonomy > file.sql
 //   node --experimental-strip-types scripts/gen-sql.mjs postal   > file.sql
+//   node --experimental-strip-types scripts/gen-sql.mjs brands   > file.sql
 import { readFileSync } from 'node:fs';
 
 const what = process.argv[2];
@@ -20,6 +21,18 @@ if (what === 'taxonomy') {
   const pairs = tx.VEHICLES.flatMap((v) => tx.VEHICLE_TRADES[v].map((t) => `  (${q(v)}, ${q(t)})`));
   out.push(pairs.join(',\n'));
   out.push('on conflict do nothing;');
+  console.log(out.join('\n'));
+} else if (what === 'brands') {
+  const { MAKES } = await import('../src/lib/makes.ts');
+  const { TOOL_BRANDS } = await import('../src/lib/equipment.ts');
+  const arr = (xs) => `array[${xs.map(q).join(', ')}]::text[]`;
+  const out = [];
+  out.push('insert into public.makes (slug, name, vehicles) values');
+  out.push(MAKES.map((m) => `  (${q(m.slug)}, ${q(m.name)}, ${arr(m.vehicles)})`).join(',\n'));
+  out.push('on conflict (slug) do update set name = excluded.name, vehicles = excluded.vehicles;\n');
+  out.push('insert into public.tool_brands (slug, name, kinds) values');
+  out.push(TOOL_BRANDS.map((b) => `  (${q(b.slug)}, ${q(b.name)}, ${arr(b.kinds)})`).join(',\n'));
+  out.push('on conflict (slug) do update set name = excluded.name, kinds = excluded.kinds;');
   console.log(out.join('\n'));
 } else if (what === 'postal') {
   // One row per postal code: the mean position of its localities.

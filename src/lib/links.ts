@@ -58,6 +58,15 @@ export function vehicleHref(vehicle: VehicleSlug): string {
   return city ? rankingPath({ vehicle, trade: null, city: city.slug }) : searchHref(vehicle);
 }
 
+/** /marques/bmw (whole country) and /marques/bmw/namur (one town). */
+export const makePath = (make: string, city?: string | null): string => (city ? `/marques/${make}/${city}` : `/marques/${make}`);
+
+/** /outillage/hunter; ?ville= narrows it to one town (not a separate page for search engines). */
+export const toolPath = (brand: string, city?: string | null): string =>
+  city ? `/outillage/${brand}?ville=${encodeURIComponent(city)}` : `/outillage/${brand}`;
+
+export const blogPath = (slug: string): string => `/blog/${slug}`;
+
 /** The search page (/recherche) with filters preset. Defaults are left out of the URL. */
 export function searchPageHref(target: Partial<RankingTarget> & { radiusKm?: number }): string {
   const params = new URLSearchParams();

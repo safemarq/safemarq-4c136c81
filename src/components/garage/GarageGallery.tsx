@@ -1,62 +1,70 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useI18n } from '@/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
 interface GarageGalleryProps {
   images: string[];
   name: string;
 }
 
+/** Listing photos; arrows and dots only when there is more than one. */
 const GarageGallery = ({ images, name }: GarageGalleryProps) => {
+  const { t } = useI18n();
   const [current, setCurrent] = useState(0);
+  const many = images.length > 1;
 
   const prev = () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
   const next = () => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
 
   return (
-    <div className="relative w-full aspect-[16/9] md:aspect-[21/9] max-w-4xl mx-auto overflow-hidden bg-card">
-      <AnimatePresence mode="wait">
+    <div className="relative aspect-[16/9] w-full overflow-hidden bg-paper-2 md:aspect-[21/9]">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.img
           key={current}
           src={images[current]}
-          alt={`${name} - Photo ${current + 1}`}
-          className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0, scale: 1.03 }}
-          animate={{ opacity: 1, scale: 1 }}
+          alt={t('garage.photoAlt', { name, n: current + 1 })}
+          className="absolute inset-0 h-full w-full object-cover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+          transition={{ duration: 0.3 }}
         />
       </AnimatePresence>
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-
-      {/* Nav arrows */}
-      <button
-        onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/60 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-background/80 transition-colors"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/60 backdrop-blur-sm border border-border flex items-center justify-center text-foreground hover:bg-background/80 transition-colors"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-
-      {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {images.map((_, i) => (
+      {many && (
+        <>
           <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all duration-200 ${
-              i === current ? 'bg-primary w-5' : 'bg-foreground/30'
-            }`}
-          />
-        ))}
-      </div>
+            type="button"
+            onClick={prev}
+            aria-label={t('common.previous')}
+            className="absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card/85 text-ink shadow-sm backdrop-blur hover:bg-card"
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label={t('common.next')}
+            className="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-card/85 text-ink shadow-sm backdrop-blur hover:bg-card"
+          >
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </button>
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setCurrent(i)}
+                aria-label={t('garage.photoAlt', { name, n: i + 1 })}
+                aria-current={i === current}
+                className={cn('h-2 rounded-full transition-all', i === current ? 'w-5 bg-chalk' : 'w-2 bg-chalk/50')}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

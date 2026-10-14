@@ -195,6 +195,42 @@ export type Database = {
           },
         ]
       }
+      garage_makes: {
+        Row: {
+          created_at: string
+          garage_id: string
+          make: string
+          official: boolean
+        }
+        Insert: {
+          created_at?: string
+          garage_id: string
+          make: string
+          official?: boolean
+        }
+        Update: {
+          created_at?: string
+          garage_id?: string
+          make?: string
+          official?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garage_makes_garage_id_fkey"
+            columns: ["garage_id"]
+            isOneToOne: false
+            referencedRelation: "garages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "garage_makes_make_fkey"
+            columns: ["make"]
+            isOneToOne: false
+            referencedRelation: "makes"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       garage_owners: {
         Row: {
           created_at: string
@@ -367,6 +403,39 @@ export type Database = {
             foreignKeyName: "garage_subscriptions_garage_id_fkey"
             columns: ["garage_id"]
             isOneToOne: true
+            referencedRelation: "garages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      garage_tool_brands: {
+        Row: {
+          brand: string
+          created_at: string
+          garage_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          garage_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          garage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garage_tool_brands_brand_fkey"
+            columns: ["brand"]
+            isOneToOne: false
+            referencedRelation: "tool_brands"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "garage_tool_brands_garage_id_fkey"
+            columns: ["garage_id"]
+            isOneToOne: false
             referencedRelation: "garages"
             referencedColumns: ["id"]
           },
@@ -584,6 +653,78 @@ export type Database = {
           },
         ]
       }
+      makes: {
+        Row: {
+          name: string
+          slug: string
+          vehicles: string[]
+        }
+        Insert: {
+          name: string
+          slug: string
+          vehicles?: string[]
+        }
+        Update: {
+          name?: string
+          slug?: string
+          vehicles?: string[]
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          author_id: string | null
+          body: string
+          category: string
+          cover_alt: string | null
+          cover_credit: string | null
+          cover_photo: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          locale: string
+          published_at: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string
+          category?: string
+          cover_alt?: string | null
+          cover_credit?: string | null
+          cover_photo?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          locale?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          category?: string
+          cover_alt?: string | null
+          cover_credit?: string | null
+          cover_photo?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          locale?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pro_accounts: {
         Row: {
           account_type: Database["public"]["Enums"]["pro_account_type"]
@@ -673,6 +814,9 @@ export type Database = {
       }
       quote_requests: {
         Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
           description: string
           garage_id: string
@@ -684,6 +828,9 @@ export type Database = {
           vehicle_type: string
         }
         Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           description: string
           garage_id: string
@@ -695,6 +842,9 @@ export type Database = {
           vehicle_type?: string
         }
         Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           description?: string
           garage_id?: string
@@ -754,6 +904,44 @@ export type Database = {
           },
         ]
       }
+      review_invoices: {
+        Row: {
+          checked_at: string | null
+          checked_by: string | null
+          created_at: string
+          path: string
+          review_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string
+          path: string
+          review_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string
+          path?: string
+          review_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_invoices_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           author_name: string
@@ -761,7 +949,6 @@ export type Database = {
           garage_id: string
           helpful_count: number
           id: string
-          invoice_url: string | null
           rating: number
           text: string
           updated_at: string
@@ -774,7 +961,6 @@ export type Database = {
           garage_id: string
           helpful_count?: number
           id?: string
-          invoice_url?: string | null
           rating: number
           text: string
           updated_at?: string
@@ -787,7 +973,6 @@ export type Database = {
           garage_id?: string
           helpful_count?: number
           id?: string
-          invoice_url?: string | null
           rating?: number
           text?: string
           updated_at?: string
@@ -825,6 +1010,24 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      tool_brands: {
+        Row: {
+          kinds: string[]
+          name: string
+          slug: string
+        }
+        Insert: {
+          kinds?: string[]
+          name: string
+          slug: string
+        }
+        Update: {
+          kinds?: string[]
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -969,6 +1172,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      garage_accepts_quotes: { Args: { p_garage: string }; Returns: boolean }
       garage_has_tier: {
         Args: {
           _garage_id: string
@@ -1025,11 +1229,13 @@ export type Database = {
           p_lat: number
           p_limit?: number
           p_lng: number
+          p_make?: string | null
           p_offset?: number
           p_radius_km?: number
           p_sort?: string
-          p_trade?: string
-          p_vehicle?: string
+          p_tool?: string | null
+          p_trade?: string | null
+          p_vehicle?: string | null
           p_verified_only?: boolean
         }
         Returns: {
@@ -1044,6 +1250,7 @@ export type Database = {
           location_precise: boolean
           logo_url: string
           name: string
+          official: boolean
           postal_code: string
           rating: number
           reviews_count: number
@@ -1073,6 +1280,28 @@ export type Database = {
           postal_code: string
           safemarq_score: number
           slug: string
+          verified: boolean
+        }[]
+      }
+      top_garages: {
+        Args: {
+          p_limit?: number
+          p_make?: string | null
+          p_offset?: number
+          p_tool?: string | null
+        }
+        Returns: {
+          address: string
+          id: string
+          locality: string
+          name: string
+          official: boolean
+          postal_code: string
+          rating: number
+          reviews_count: number
+          safemarq_score: number
+          slug: string
+          total_count: number
           verified: boolean
         }[]
       }

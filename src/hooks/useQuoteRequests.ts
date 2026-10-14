@@ -13,6 +13,8 @@ export function useCreateQuoteRequest() {
       vehicle_type: string;
       service_type: string;
       description: string;
+      contact_name?: string | null;
+      contact_phone?: string | null;
     }) => {
       const { error } = await supabase.from('quote_requests').insert(data);
       if (error) throw error;

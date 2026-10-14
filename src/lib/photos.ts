@@ -68,3 +68,6 @@ export function photoSrcSet(photo: Photo, widths: number[], ratio: number, quali
 }
 
 export const tradePhoto = (slug: string): Photo | undefined => (PHOTOS as Record<string, Photo>)[slug];
+
+/** A blog cover: an Unsplash id typed in the admin, centred crop. */
+export const coverPhoto = (id: string, credit = ''): Photo => ({ id, fx: 0.5, fy: 0.5, credit });

@@ -1,5 +1,5 @@
 import { MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useI18n } from '@/i18n/I18nProvider';
 import LeafletMapView, { garageMarkerIcon } from '@/components/maps/LeafletMapView';
 
 interface GarageMapProps {
@@ -16,6 +16,7 @@ const escapeHtml = (value: string) =>
     .split("'").join('&#39;');
 
 const GarageMap = ({ address, coords }: GarageMapProps) => {
+  const { t } = useI18n();
   const markers = [
     {
       id: 'garage-location',
@@ -26,41 +27,34 @@ const GarageMap = ({ address, coords }: GarageMapProps) => {
   ];
 
   return (
-    <motion.div
-      className="surface-card overflow-hidden"
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: 0.1, ease: [0.2, 0, 0, 1] }}
-    >
-      <div className="relative aspect-[16/9] z-0">
+    <section aria-label={t('garage.directions')} className="overflow-hidden rounded-2xl border border-line">
+      <div className="relative z-0 aspect-[16/9]">
         <LeafletMapView
           center={[coords.lat, coords.lng]}
           zoom={15}
           markers={markers}
           fitPoints={[[coords.lat, coords.lng]]}
-          className="w-full h-full"
-          style={{ background: 'hsl(217 33% 17%)' }}
+          className="h-full w-full"
+          style={{ background: 'hsl(var(--paper-2))' }}
           maxFitZoom={15}
           scrollWheelZoom={false}
         />
       </div>
-
-      <div className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="w-3.5 h-3.5 text-primary" />
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+        <p className="flex min-w-0 items-start gap-2 text-[15px] text-ink">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate1" aria-hidden />
           <span>{address}</span>
-        </div>
+        </p>
         <a
-          href={`https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`}
+          href={`https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-primary font-semibold hover:text-primary/80 transition-colors"
+          className="text-[15px] font-semibold text-strong underline underline-offset-4"
         >
-          Itinéraire →
+          {t('garage.directions')}
         </a>
       </div>
-    </motion.div>
+    </section>
   );
 };
 

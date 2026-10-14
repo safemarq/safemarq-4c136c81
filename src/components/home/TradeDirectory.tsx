@@ -1,13 +1,14 @@
-import { useId, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { VehicleTabs } from '@/components/site/VehicleTabs';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useI18n } from '@/i18n/I18nProvider';
-import { tradeLabelKey, vehicleKey } from '@/i18n/keys';
+import { tradeLabelKey } from '@/i18n/keys';
 import { tradeHref } from '@/lib/links';
 import { VEHICLE_PHOTOS, photoSrcSet, photoUrl } from '@/lib/photos';
-import { DEFAULT_VEHICLE, VEHICLES, groupedTrades, type TradeGroupId, type VehicleSlug } from '@/lib/taxonomy';
+import { DEFAULT_VEHICLE, groupedTrades, type TradeGroupId, type VehicleSlug } from '@/lib/taxonomy';
 import { cn } from '@/lib/utils';
 
 /**
@@ -38,7 +39,7 @@ export function TradeDirectory() {
         <p className="mt-3 text-lg text-slate1">{t('home.directoryLead')}</p>
       </div>
 
-      <VehicleTabs value={vehicle} onChange={choose} idBase={ids} />
+      <VehicleTabs value={vehicle} onChange={choose} idBase={ids} className="mt-8 md:mt-10" />
 
       <div
         role="tabpanel"
@@ -90,64 +91,6 @@ export function TradeDirectory() {
         </div>
       </div>
     </section>
-  );
-}
-
-/** The seven vehicles as words; the amber line slides to the one chosen. */
-function VehicleTabs({ value, onChange, idBase }: { value: VehicleSlug; onChange: (v: VehicleSlug) => void; idBase: string }) {
-  const { t } = useI18n();
-  const refs = useRef(new Map<VehicleSlug, HTMLButtonElement>());
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    const edge = e.key === 'Home' ? 0 : e.key === 'End' ? VEHICLES.length - 1 : null;
-    if (!step && edge === null) return;
-    e.preventDefault();
-    const next = VEHICLES[edge ?? (VEHICLES.indexOf(value) + step + VEHICLES.length) % VEHICLES.length];
-    onChange(next);
-    refs.current.get(next)?.focus();
-  };
-
-  return (
-    <div
-      role="tablist"
-      aria-label={t('search.vehicleLabel')}
-      onKeyDown={onKeyDown}
-      className="scrollbar-hide -mx-4 mt-8 flex gap-x-6 overflow-x-auto border-b border-line px-4 [mask-image:linear-gradient(90deg,#000_86%,transparent)] sm:mx-0 sm:px-0 md:mt-10 md:gap-x-9 md:[mask-image:none]"
-    >
-      {VEHICLES.map((v) => {
-        const selected = v === value;
-        return (
-          <button
-            key={v}
-            ref={(el) => {
-              if (el) refs.current.set(v, el);
-            }}
-            type="button"
-            role="tab"
-            id={`${idBase}-${v}`}
-            aria-selected={selected}
-            aria-controls={`${idBase}-panel`}
-            tabIndex={selected ? 0 : -1}
-            onClick={() => onChange(v)}
-            className={cn(
-              'relative shrink-0 whitespace-nowrap pb-3 pt-1 font-display text-[22px] font-semibold transition-colors md:text-[26px]',
-              selected ? 'text-strong' : 'text-slate2 hover:text-ink',
-            )}
-          >
-            {t(vehicleKey(v, 'short'))}
-            {selected && (
-              <motion.span
-                layoutId={`${idBase}-line`}
-                aria-hidden
-                className="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-amber"
-                transition={{ type: 'spring', stiffness: 420, damping: 36 }}
-              />
-            )}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 

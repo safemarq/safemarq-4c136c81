@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ChevronRight, Map as MapIcon, SearchX } from 'lucide-react';
+import { ChevronRight, Map as MapIcon, SearchX } from 'lucide-react';
 import Seo from '@/components/Seo';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import { GarageRow } from '@/components/ranking/GarageRow';
+import { LoadError, RankingFilters } from '@/components/ranking/RankingControls';
 import { usePlaces } from '@/hooks/usePlaces';
 import { DEFAULT_RADIUS, RADIUS_OPTIONS, useRanking, type RankingSort } from '@/hooks/useRanking';
 import { useI18n } from '@/i18n/I18nProvider';
@@ -40,19 +41,6 @@ function WithCity({ target }: { target: RankingTarget }) {
       <main id="contenu" className="container-editorial py-16" aria-busy={!isError}>
         {isError ? <LoadError onRetry={() => refetch()} /> : <div className="h-48 animate-pulse rounded-2xl bg-paper-2" />}
       </main>
-    </div>
-  );
-}
-
-function LoadError({ onRetry }: { onRetry: () => void }) {
-  const { t } = useI18n();
-  return (
-    <div role="alert" className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-card p-6">
-      <AlertCircle className="h-6 w-6 text-destructive" aria-hidden />
-      <p className="flex-1 text-[16px] text-ink">{t('ranking.error')}</p>
-      <button type="button" onClick={onRetry} className="btn-ghost-navy min-h-[44px] px-4">
-        {t('common.retry')}
-      </button>
     </div>
   );
 }
@@ -210,7 +198,7 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
             {t('ranking.seeOnMap')}
           </Link>
 
-          <Filters
+          <RankingFilters
             radius={radius}
             sort={sort}
             onRadius={(r) => setParam('rayon', r === DEFAULT_RADIUS[vehicle] ? null : String(r))}
@@ -300,45 +288,6 @@ function Ranking({ target, city }: { target: RankingTarget; city: City }) {
       </main>
 
       <SiteFooter />
-    </div>
-  );
-}
-
-function Filters({
-  radius,
-  sort,
-  onRadius,
-  onSort,
-}: {
-  radius: number;
-  sort: RankingSort;
-  onRadius: (km: number) => void;
-  onSort: (sort: RankingSort) => void;
-}) {
-  const { t } = useI18n();
-  const chip = (active: boolean) =>
-    cn(
-      'min-h-[40px] shrink-0 rounded-full border px-3.5 text-[14px] font-semibold transition-colors',
-      active ? 'border-strong bg-strong text-paper' : 'border-line bg-card text-slate1 hover:text-ink',
-    );
-  return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div role="radiogroup" aria-label={t('ranking.radiusLabel')} className="scrollbar-hide -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <span className="shrink-0 text-[14px] font-semibold text-slate1">{t('ranking.radiusLabel')}</span>
-        {RADIUS_OPTIONS.map((km) => (
-          <button key={km} type="button" role="radio" aria-checked={km === radius} onClick={() => onRadius(km)} className={chip(km === radius)}>
-            {t('ranking.radiusValue', { km })}
-          </button>
-        ))}
-      </div>
-      <div role="radiogroup" aria-label={t('ranking.sortLabel')} className="flex items-center gap-2">
-        <span className="shrink-0 text-[14px] font-semibold text-slate1">{t('ranking.sortLabel')}</span>
-        {(['score', 'distance'] as const).map((s) => (
-          <button key={s} type="button" role="radio" aria-checked={s === sort} onClick={() => onSort(s)} className={chip(s === sort)}>
-            {s === 'score' ? t('ranking.sortScore') : t('ranking.sortDistance')}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

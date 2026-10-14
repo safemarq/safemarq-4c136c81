@@ -6,7 +6,8 @@ import type { TradeSlug, VehicleSlug } from '@/lib/taxonomy';
 export type RankingSort = 'score' | 'distance';
 
 export interface RankingQuery {
-  vehicle: VehicleSlug;
+  /** null: any vehicle (make and equipment pages). */
+  vehicle: VehicleSlug | null;
   trade: TradeSlug | null;
   lat: number;
   lng: number;
@@ -14,6 +15,10 @@ export interface RankingQuery {
   sort?: RankingSort;
   verifiedOnly?: boolean;
   limit?: number;
+  /** Only establishments that service this make (slug from lib/makes). */
+  make?: string | null;
+  /** Only workshops equipped by this brand (slug from lib/equipment). */
+  tool?: string | null;
 }
 
 export interface Listing {
@@ -32,6 +37,8 @@ export interface Listing {
   precise: boolean;
   distanceKm: number;
   rank: number;
+  /** Official dealer of the make searched for (checked by SafeMarq). */
+  official: boolean;
 }
 
 type Row = Database['public']['Functions']['search_garages']['Returns'][number];
@@ -51,19 +58,23 @@ const toListing = (r: Row, rank: number): Listing => ({
   precise: r.location_precise,
   distanceKm: Number(r.distance_km),
   rank,
+  official: r.official,
 });
 
 async function fetchPage(q: RankingQuery, limit: number, offset: number) {
   const { data, error } = await supabase.rpc('search_garages', {
     p_lat: q.lat,
     p_lng: q.lng,
+    // An explicit null lifts the vehicle filter; leaving it out would mean "voiture".
     p_vehicle: q.vehicle,
-    p_trade: q.trade ?? undefined,
+    p_trade: q.trade,
     p_radius_km: q.radiusKm,
     p_sort: q.sort ?? 'score',
     p_limit: limit,
     p_offset: offset,
     p_verified_only: q.verifiedOnly ?? false,
+    p_make: q.make ?? null,
+    p_tool: q.tool ?? null,
   });
   if (error) throw error;
   const rows = data ?? [];

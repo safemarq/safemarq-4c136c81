@@ -6,18 +6,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useGarageOwnership } from '@/hooks/useDashboard';
-import { useGarages } from '@/hooks/useGarages';
+import { useGarageSummaries } from '@/hooks/useGarageSummaries';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import FavoriteButton from '@/components/FavoriteButton';
+import { FavoriteButton } from '@/components/favorites/FavoriteButton';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Profile = () => {
   const { user, signOut, loading } = useAuth();
-  const { data: favoriteIds = [], isLoading: loadingFavs } = useFavorites();
-  const { data: garages = [], isLoading: loadingGarages } = useGarages();
+  const { ids: favoriteIds, isLoading: loadingFavs } = useFavorites();
   const { data: ownerships = [] } = useGarageOwnership();
 
   const { data: profile } = useQuery({
@@ -48,11 +47,15 @@ const Profile = () => {
     },
   });
 
+  // Only the listings this page shows: favourites and the ones reviewed.
+  const neededIds = [...new Set([...favoriteIds, ...myReviews.map((r) => r.garage_id)])];
+  const { data: garages = [], isLoading: loadingGarages } = useGarageSummaries(neededIds);
+
   if (loading) return null;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/auth?retour=/profile" replace />;
 
   const favoriteGarages = garages.filter(g => favoriteIds.includes(g.id));
-  const isLoading = loadingFavs || loadingGarages || loadingReviews;
+  const isLoading = loadingFavs || (neededIds.length > 0 && loadingGarages) || loadingReviews;
   const displayName = profile?.display_name || user.email?.split('@')[0] || 'Utilisateur';
 
   // Map garage ids to names for reviews
@@ -203,6 +206,9 @@ const Profile = () => {
               </div>
             ) : (
               <div className="space-y-3">
+                <Link to="/favoris" className="inline-flex text-sm font-semibold text-strong underline underline-offset-4">
+                  Comparer mes favoris
+                </Link>
                 {favoriteGarages.map((garage, index) => (
                   <motion.div
                     key={garage.id}
@@ -210,28 +216,23 @@ const Profile = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Link to={`/garage/${garage.slug}`} className="block">
-                      <div className="surface-card p-4 flex items-center gap-4 hover:bg-accent/50 transition-colors">
-                        <div className="w-14 h-14 rounded-xl bg-secondary overflow-hidden shrink-0">
-                          {garage.images[0] && (
-                            <img src={garage.images[0]} alt={garage.name} className="w-full h-full object-cover" />
-                          )}
+                    <div className="surface-card p-4 flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <Link to={`/garage/${garage.slug}`} className="text-sm font-semibold text-foreground truncate hover:underline">
+                            {garage.name}
+                          </Link>
+                          {garage.verified && <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <h3 className="text-sm font-semibold text-foreground truncate">{garage.name}</h3>
-                            {garage.verified && <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">{garage.specialty} · {garage.address}</p>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            <span className="text-xs font-bold text-foreground">{garage.rating}</span>
-                            <span className="text-[10px] text-muted-foreground">({garage.reviews} avis)</span>
-                          </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{garage.address}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <span className="text-xs font-bold text-foreground">{garage.rating}</span>
+                          <span className="text-[10px] text-muted-foreground">({garage.reviews} avis)</span>
                         </div>
-                        <FavoriteButton garageId={garage.id} />
                       </div>
-                    </Link>
+                      <FavoriteButton garageId={garage.id} garageName={garage.name} />
+                    </div>
                   </motion.div>
                 ))}
               </div>

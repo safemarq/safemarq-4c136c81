@@ -1,9 +1,10 @@
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, FileText, LayoutGrid, Loader2, MessageSquare, UserRound } from 'lucide-react';
+import { CreditCard, FileText, LayoutGrid, Loader2, MessageSquare, UserRound, Wrench } from 'lucide-react';
 import Seo from '@/components/Seo';
 import { ProShell } from '@/components/pro/ProShell';
 import { KycBanner, StatusChip } from '@/components/pro/dashboard/KycBanner';
 import { AccountSection, Locked, OverviewSection, PlanSection, QuotesSection, ReviewsSection } from '@/components/pro/dashboard/sections';
+import { WorkshopSection } from '@/components/pro/dashboard/WorkshopSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProAccount, useProWorkspace } from '@/hooks/useProAccount';
 import { useI18n } from '@/i18n/I18nProvider';
@@ -13,6 +14,7 @@ const SECTIONS = [
   { id: 'overview', icon: LayoutGrid },
   { id: 'reviews', icon: MessageSquare },
   { id: 'quotes', icon: FileText },
+  { id: 'workshop', icon: Wrench },
   { id: 'plan', icon: CreditCard },
   { id: 'account', icon: UserRound },
 ] as const;
@@ -63,6 +65,7 @@ export default function ProDashboard() {
     if (!approved) return <Locked />;
     if (section === 'reviews') return <ReviewsSection owned={owned} />;
     if (section === 'quotes') return <QuotesSection owned={owned} />;
+    if (section === 'workshop') return <WorkshopSection owned={owned} />;
     return <PlanSection owned={owned} />;
   })();
 

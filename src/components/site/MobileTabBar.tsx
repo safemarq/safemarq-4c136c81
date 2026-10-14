@@ -11,7 +11,7 @@ export default function MobileTabBar() {
 
   const tabs = [
     { to: '/', label: t('nav.home'), icon: Home, end: true },
-    { to: '/favorites', label: t('nav.favorites'), icon: Heart, end: false },
+    { to: '/favoris', label: t('nav.favorites'), icon: Heart, end: false },
     pro
       ? { to: '/pro/dashboard', label: t('nav.pros'), icon: Briefcase, end: false }
       : { to: '/vehicles', label: t('nav.vehicles'), icon: Car, end: false },

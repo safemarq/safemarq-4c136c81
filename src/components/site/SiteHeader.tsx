@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ChevronDown, Menu, Search } from 'lucide-react';
+import { ChevronDown, Heart, Menu, Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TradeList } from '@/components/search/TradeList';
@@ -8,6 +8,7 @@ import { BrandLink } from './BrandMark';
 import { LanguageMenu, PreferenceSegments, ThemeMenu } from './Preferences';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFavorites } from '@/hooks/useFavorites';
 import { tradeHref, vehicleHref } from '@/lib/links';
 import { DEFAULT_VEHICLE, VEHICLES, type VehicleSlug } from '@/lib/taxonomy';
 import { vehicleIcon } from '@/lib/tradeMeta';
@@ -23,8 +24,9 @@ interface Props {
 }
 
 export default function SiteHeader({ overlay = false, wide = false }: Props) {
-  const { t } = useI18n();
+  const { t, tp } = useI18n();
   const { user } = useAuth();
+  const { ids: favorites } = useFavorites();
   const { pathname } = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -102,10 +104,13 @@ export default function SiteHeader({ overlay = false, wide = false }: Props) {
           <Link to={vehicleHref('voiture')} className={navItem}>
             {t('nav.garages')}
           </Link>
-          <Link to={tradeHref('carrosserie')} className={cn(navItem, 'hidden xl:inline')}>
-            {t('nav.bodyshops')}
-          </Link>
-          <NavLink to="/about" className={navItem}>
+          <NavLink to="/marques" className={navItem}>
+            {t('nav.makes')}
+          </NavLink>
+          <NavLink to="/blog" className={cn(navItem, 'hidden xl:inline')}>
+            {t('nav.guides')}
+          </NavLink>
+          <NavLink to="/about" className={cn(navItem, 'hidden xl:inline')}>
             {t('nav.method')}
           </NavLink>
           <NavLink to="/recherche" className={cn(navItem, 'hidden items-center gap-1.5 xl:inline-flex')}>
@@ -127,6 +132,22 @@ export default function SiteHeader({ overlay = false, wide = false }: Props) {
           </Link>
           <LanguageMenu onDark={onDark} className="hidden sm:inline-flex" />
           <ThemeMenu onDark={onDark} />
+          <Link
+            to="/favoris"
+            aria-label={tp('nav.favoritesAria', favorites.length)}
+            title={t('nav.favorites')}
+            className={cn(
+              'relative inline-flex h-11 w-11 items-center justify-center rounded-lg',
+              onDark ? 'text-chalk hover:bg-chalk/10' : 'text-ink hover:bg-paper-2',
+            )}
+          >
+            <Heart className={cn('h-[21px] w-[21px]', favorites.length > 0 && 'fill-coral text-coral')} aria-hidden />
+            {favorites.length > 0 && (
+              <span aria-hidden className="absolute right-1 top-1 min-w-[18px] rounded-full bg-strong px-1 text-center text-[11px] font-bold leading-[18px] text-paper num dark:bg-chalk dark:text-navy-900">
+                {favorites.length > 99 ? '99+' : favorites.length}
+              </span>
+            )}
+          </Link>
           <Link
             to={accountHref}
             className={cn(
@@ -168,8 +189,10 @@ export default function SiteHeader({ overlay = false, wide = false }: Props) {
               <nav className="flex flex-col px-5 pt-3" aria-label={t('nav.menu')}>
                 {[
                   { to: vehicleHref('voiture'), label: t('nav.garages') },
-                  { to: tradeHref('carrosserie'), label: t('nav.bodyshops') },
+                  { to: '/marques', label: t('nav.makes') },
                   { to: '/recherche', label: t('nav.search') },
+                  { to: '/favoris', label: favorites.length ? `${t('nav.favorites')} (${favorites.length})` : t('nav.favorites') },
+                  { to: '/blog', label: t('nav.guides') },
                   { to: '/about', label: t('nav.method') },
                   { to: accountHref, label: user ? t('nav.account') : t('nav.signIn') },
                 ].map((item) => (

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BadgeCheck, MapPin, Star } from 'lucide-react';
+import { Award, BadgeCheck, MapPin, Star } from 'lucide-react';
 import { ScoreBadge } from '@/components/site/ScoreBadge';
 import { useI18n } from '@/i18n/I18nProvider';
 import type { Listing } from '@/hooks/useRanking';
@@ -7,7 +7,18 @@ import { cn } from '@/lib/utils';
 
 export type RowGarage = Pick<Listing, 'slug' | 'name' | 'rating' | 'reviews' | 'verified' | 'address' | 'score' | 'rank'> & {
   distanceKm?: number | null;
+  official?: boolean;
 };
+
+/** "Official dealer" mark, checked by SafeMarq (never set by the garage itself). */
+export function OfficialTag({ label, className }: { label: string; className?: string }) {
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 rounded-md border border-strong/25 px-2 py-0.5 text-[13px] font-semibold text-strong', className)}>
+      <Award className="h-3.5 w-3.5" aria-hidden />
+      {label}
+    </span>
+  );
+}
 
 export function Stars({ value, className }: { value: number; className?: string }) {
   return (
@@ -28,14 +39,29 @@ export function Stars({ value, className }: { value: number; className?: string 
 }
 
 /** One line of a ranking: rank, SafeMarq score, Google rating, address and actions. */
-export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowGarage; cityLabel: string; compact?: boolean }) {
+export function GarageRow({
+  garage,
+  cityLabel,
+  compact = false,
+  officialLabel,
+  action,
+}: {
+  garage: RowGarage;
+  cityLabel: string;
+  compact?: boolean;
+  /** Shown when garage.official (make pages): "Concession officielle BMW". */
+  officialLabel?: string;
+  /** Extra control at the top right (e.g. the favourite heart). */
+  action?: React.ReactNode;
+}) {
   const { t, tp, formatNumber } = useI18n();
   const top = garage.rank === 1 && !compact;
 
   return (
     <article
       className={cn(
-        'relative grid gap-4 rounded-2xl border bg-card p-4 md:grid-cols-[auto_1fr_auto] md:items-center md:gap-6 md:p-5',
+        'relative grid gap-4 rounded-2xl border bg-card p-4 md:items-center md:gap-6 md:p-5',
+        action ? 'md:grid-cols-[auto_1fr_auto_auto]' : 'md:grid-cols-[auto_1fr_auto]',
         top ? 'border-amber/70 shadow-md' : 'border-line',
       )}
     >
@@ -53,7 +79,8 @@ export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowG
       </div>
 
       <div className="min-w-0">
-        <h3 className="truncate text-[22px] font-semibold leading-tight text-strong">
+        {garage.official && officialLabel && <OfficialTag label={officialLabel} className="mb-1.5" />}
+        <h3 className={cn('truncate text-[22px] font-semibold leading-tight text-strong', action && 'pr-12 md:pr-0')}>
           <Link to={`/garage/${garage.slug}`} className="after:absolute after:inset-0 md:after:content-none hover:underline">
             {garage.name}
           </Link>
@@ -81,6 +108,8 @@ export function GarageRow({ garage, cityLabel, compact = false }: { garage: RowG
           </p>
         )}
       </div>
+
+      {action && <div className="absolute right-3 top-3 z-10 md:static md:order-last md:self-start">{action}</div>}
 
       {!compact && (
         <div className="relative z-10 flex gap-2 md:flex-col md:items-stretch">

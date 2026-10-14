@@ -93,6 +93,9 @@ export interface OwnerQuote {
   description: string;
   status: QuoteStatus;
   created_at: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
 }
 
 export function useOwnerQuotes(garageId: string | undefined) {
@@ -102,7 +105,7 @@ export function useOwnerQuotes(garageId: string | undefined) {
     queryFn: async (): Promise<OwnerQuote[]> => {
       const { data, error } = await supabase
         .from('quote_requests')
-        .select('id, plate, vehicle_type, service_type, description, status, created_at')
+        .select('id, plate, vehicle_type, service_type, description, status, created_at, contact_name, contact_phone, contact_email')
         .eq('garage_id', garageId!)
         .order('created_at', { ascending: false })
         .limit(200);

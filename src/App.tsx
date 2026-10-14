@@ -12,6 +12,7 @@ import { I18nProvider } from '@/i18n/I18nProvider';
 import type { Locale } from '@/i18n/config';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import CookieBanner from '@/components/CookieBanner';
+import { FavoritesSync } from '@/hooks/useFavorites';
 import Index from './pages/Index.tsx';
 
 // Every route except the landing page is its own chunk: phones download only
@@ -38,6 +39,12 @@ const Admin = lazy(() => import('./pages/Admin.tsx'));
 const NotFound = lazy(() => import('./pages/NotFound.tsx'));
 const Ranking = lazy(() => import('./pages/Ranking.tsx'));
 const Search = lazy(() => import('./pages/Search.tsx'));
+const Makes = lazy(() => import('./pages/Makes.tsx'));
+const MakePage = lazy(() => import('./pages/MakePage.tsx'));
+const Equipment = lazy(() => import('./pages/Equipment.tsx'));
+const ToolBrandPage = lazy(() => import('./pages/ToolBrandPage.tsx'));
+const Blog = lazy(() => import('./pages/Blog.tsx'));
+const BlogPost = lazy(() => import('./pages/BlogPost.tsx'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,12 +83,15 @@ const App = ({ initialLocale }: { initialLocale: Locale }) => (
                 <Sonner />
                 <BrowserRouter>
                   <ScrollManager />
+                  <FavoritesSync />
                   <ErrorBoundary>
                     <Suspense fallback={<PageFallback />}>
                       <Routes>
                         <Route path="/" element={<Index />} />
                         <Route path="/auth" element={<Auth />} />
-                        <Route path="/favorites" element={<Favorites />} />
+                        <Route path="/nouveau-mot-de-passe" element={<ProResetPassword variant="consumer" />} />
+                        <Route path="/favoris" element={<Favorites />} />
+                        <Route path="/favorites" element={<Navigate to="/favoris" replace />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/vehicles" element={<Vehicles />} />
 
@@ -99,6 +109,13 @@ const App = ({ initialLocale }: { initialLocale: Locale }) => (
                         <Route path="/billing/cancel" element={<BillingCancel />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/recherche" element={<Search />} />
+                        <Route path="/marques" element={<Makes />} />
+                        <Route path="/marques/:make" element={<MakePage />} />
+                        <Route path="/marques/:make/:city" element={<MakePage />} />
+                        <Route path="/outillage" element={<Equipment />} />
+                        <Route path="/outillage/:brand" element={<ToolBrandPage />} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/blog/:slug" element={<BlogPost />} />
                         <Route path="/garage/:id" element={<GarageDetail />} />
                         <Route path="/legal/terms" element={<Terms />} />
                         <Route path="/legal/privacy" element={<Privacy />} />

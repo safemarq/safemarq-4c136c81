@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { AuthError, Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable';
 
 type Result = { error: AuthError | null };
 type SignUpResult = Result & {
@@ -18,7 +19,7 @@ interface AuthContextType {
   recovering: boolean;
   signUp: (email: string, password: string, displayName?: string, redirectPath?: string) => Promise<SignUpResult>;
   signIn: (email: string, password: string) => Promise<Result>;
-  signInWithGoogle: (redirectPath: string) => Promise<Result>;
+  signInWithGoogle: (redirectPath: string) => Promise<{ error: Error | null }>;
   resendConfirmation: (email: string, redirectPath: string) => Promise<Result>;
   requestPasswordReset: (email: string, redirectPath: string) => Promise<Result>;
   updatePassword: (password: string) => Promise<Result>;
@@ -74,11 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       },
       signInWithGoogle: async (redirectPath) => {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: absolute(redirectPath), queryParams: { prompt: 'select_account' } },
+        // Google credentials are managed by Lovable Cloud: its broker runs the OAuth
+        // round trip, then hands the session back to Supabase (or redirects the page).
+        const result = await lovable.auth.signInWithOAuth('google', {
+          redirect_uri: absolute(redirectPath),
+          extraParams: { prompt: 'select_account' },
         });
-        return { error };
+        return { error: result.error ?? null };
       },
       resendConfirmation: async (email, redirectPath) => {
         const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: absolute(redirectPath) } });
