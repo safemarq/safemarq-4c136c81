@@ -50,7 +50,7 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!ownership) return json({ error: 'Vous n'êtes pas propriétaire' }, 403);
+    if (!ownership) return json({ error: "Vous n'êtes pas propriétaire" }, 403);
 
     const { data: sub } = await supabase
       .from('garage_subscriptions')
