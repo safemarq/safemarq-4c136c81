@@ -94,7 +94,7 @@ export function useReviewSubmission() {
   return useMutation({
     mutationFn: async ({ id, decision, note }: { id: string; decision: 'approved' | 'rejected'; note: string | null }) => {
       if (decision === 'approved') {
-        const { error } = await supabase.rpc('approve_garage_submission', { p_submission_id: id, p_note: note });
+        const { error } = await supabase.rpc('approve_garage_submission', { p_submission_id: id, p_note: note ?? undefined });
         if (error) throw error;
         return;
       }

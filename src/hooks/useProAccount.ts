@@ -144,7 +144,7 @@ export function useSubmitProOnboarding() {
     mutationFn: async ({ account, establishment }: OnboardingPayload) => {
       const { error } = await supabase.rpc('submit_pro_onboarding', {
         p_account: account ? (account as unknown as Json) : null,
-        p_claim_garage_id: establishment?.mode === 'existing' ? establishment.garage.id : null,
+        p_claim_garage_id: establishment?.mode === 'existing' ? establishment.garage.id : undefined,
         p_new_garage: establishment?.mode === 'new' ? (establishment.values as unknown as Json) : null,
       });
       if (error) throw error;

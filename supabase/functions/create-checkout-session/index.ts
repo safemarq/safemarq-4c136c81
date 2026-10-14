@@ -59,7 +59,7 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!ownership) return json({ error: 'Vous n'êtes pas propriétaire de ce garage' }, 403);
+    if (!ownership) return json({ error: "Vous n'êtes pas propriétaire de ce garage" }, 403);
 
     // Réutiliser le customer Stripe existant si déjà créé pour ce garage
     const { data: existing } = await supabase
