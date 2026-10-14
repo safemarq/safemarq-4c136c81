@@ -58,7 +58,7 @@ async function fetchPage(q: RankingQuery, limit: number, offset: number) {
     p_lat: q.lat,
     p_lng: q.lng,
     p_vehicle: q.vehicle,
-    p_trade: q.trade,
+    p_trade: q.trade ?? undefined,
     p_radius_km: q.radiusKm,
     p_sort: q.sort ?? 'score',
     p_limit: limit,
@@ -124,8 +124,8 @@ export function useGarageSuggestions(text: string, origin?: { lat: number; lng: 
     queryFn: async (): Promise<GarageSuggestion[]> => {
       const { data, error } = await supabase.rpc('suggest_garages', {
         q,
-        p_lat: origin?.lat ?? null,
-        p_lng: origin?.lng ?? null,
+        p_lat: origin?.lat ?? undefined,
+        p_lng: origin?.lng ?? undefined,
         p_limit: 5,
       });
       if (error) throw error;
